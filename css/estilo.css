@@ -13,7 +13,7 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
     padding: 16px;
-    background-color: #f7f7f7;
+    background-color: #E0F2F1;
     color: #333;
 }
 
@@ -29,6 +29,18 @@ header.cabecalho-principal {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.barra-superior .menu {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+}
+.barra-superior .menu:hover {
+     background-color: #c0e4e2
 }
 
 .botao-acao-coluna {
@@ -356,16 +368,19 @@ header.cabecalho-principal {
 /* Botão simples para adicionar cartão */
 .botao-adicionar-cartao {
     cursor: pointer;
-    padding: 6px 10px;
+    padding: 1rem;
     font-size: 0.85rem;
     width: 100%;
     border: 1px dashed #bbb;
-    background: #fdfdfd;
-    border-radius: 4px;
+    background: #ecf9f8;
+    border-radius: 0.75rem;
+    color: #00796b;
+    font-weight: 100;
+    opacity: 0.75;
 }
 
 .botao-adicionar-cartao:hover {
-    background: #eee;
+    opacity: 1;
 }
 
 /* Área onde os cartões serão renderizados e arrastados */
@@ -383,6 +398,7 @@ header.cabecalho-principal {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    border-radius: 0.75rem;
 }
 
 .cartao h3 {
@@ -401,32 +417,35 @@ header.cabecalho-principal {
     color: #666;
     background-color: #f8f9fa;
     border: 1px solid #e9ecef;
-    border-radius: 3px;
+    border-radius: 10px;
     padding: 3px 6px;
     display: inline-block;
     width: fit-content;
 }
+
+.cartao-data-entrega i {
+    margin-right: 0.25rem;}
 
 /* Indicador visual de prioridade no cartão */
 .cartao-prioridade {
     font-size: 0.75rem;
     font-weight: 600;
     padding: 2px 6px;
-    border-radius: 3px;
+    border-radius: 10px;
     display: inline-block;
     width: fit-content;
 }
 
 .cartao-prioridade-baixa {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #c8e6c9;
+    background-color: #e3ebf3;
+    color: #1565c0;
+    border: 1px solid #2970c2;
 }
 
 .cartao-prioridade-media {
-    background-color: #fff8e1;
-    color: #b78103;
-    border: 1px solid #ffe082;
+    background-color: #fefbf6;
+    color: #f9a825;
+    border: 1px solid #FF9800;
 }
 
 .cartao-prioridade-alta {
@@ -442,10 +461,13 @@ header.cabecalho-principal {
     color: #495057;
     background-color: #f1f3f5;
     border: 1px solid #dee2e6;
-    border-radius: 3px;
+    border-radius: 10px;
     padding: 2px 6px;
     display: inline-block;
     width: fit-content;
+}
+.cartao .tarefas i {
+    margin-right: 0.25rem;
 }
 
 .cartao .tarefas.tarefas-concluidas {
