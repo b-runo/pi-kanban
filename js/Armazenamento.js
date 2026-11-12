@@ -69,6 +69,23 @@ class BancoDeDadosLocal {
                 }
             });
         });
+
+        // Versão 6: Suporte à tabela 'configuracoes' (tituloDoProjeto, tema)
+        this.banco.version(6).stores({
+            cartoes: "id, colunaAtual, ordem, prioridade",
+            colunas: "id, ordem, cor_destaque",
+            itens_cartao: "id, idCartao, ordem",
+            configuracoes: "id"
+        }).upgrade(async (transacao) => {
+            const configExistente = await transacao.configuracoes.get("geral");
+            if (!configExistente) {
+                await transacao.configuracoes.put({
+                    id: "geral",
+                    tituloDoProjeto: "Meu Projeto",
+                    tema: "light"
+                });
+            }
+        });
     }
 
     /**
@@ -396,6 +413,44 @@ class BancoDeDadosLocal {
     }
 
     /**
+     * Carrega um cartão específico do IndexedDB pelo seu identificador.
+     *
+     * @param {string} id - Identificador único do cartão.
+     * @returns {Promise<Cartao|null>} Instância do Cartão ou null caso não encontrado.
+     */
+    async carregarCartaoPorId(id) {
+        try {
+            if (!id) return null;
+            const registro = await this.banco.cartoes.get(id);
+            if (!registro) return null;
+
+            const prioridade = BancoDeDadosLocal.normalizarPrioridade(registro.prioridade);
+
+            if (typeof Cartao !== "undefined") {
+                const instanciaCartao = new Cartao({
+                    id: registro.id,
+                    titulo: registro.titulo,
+                    descricao: registro.descricao,
+                    dataEntrega: registro.dataEntrega || "",
+                    prioridade: prioridade,
+                    colunaAtual: registro.colunaAtual,
+                    ordem: registro.ordem
+                });
+                instanciaCartao.prioridade = prioridade;
+                return instanciaCartao;
+            }
+
+            return {
+                ...registro,
+                prioridade: prioridade
+            };
+        } catch (erro) {
+            console.error(`Erro ao carregar cartão ${id} do IndexedDB:`, erro);
+            return null;
+        }
+    }
+
+    /**
      * Exclui um cartão específico do banco de dados pelo identificador.
      * 
      * @param {string} id - Identificador único do cartão.
@@ -573,6 +628,71 @@ class BancoDeDadosLocal {
             console.error(`Erro ao excluir item ${id} do IndexedDB:`, erro);
             throw erro;
         }
+    }
+
+    /**
+     * Carrega as configurações do aplicativo do IndexedDB.
+     * Retorna a configuração padrão caso ainda não exista no banco.
+     *
+     * @returns {Promise<{id: string, tituloDoProjeto: string, tema: "dark" | "light"}>}
+     */
+    async carregarConfiguracoes() {
+        try {
+            let config = await this.banco.configuracoes.get("geral");
+            if (!config) {
+                config = {
+                    id: "geral",
+                    tituloDoProjeto: "Meu Projeto",
+                    tema: "light"
+                };
+                await this.banco.configuracoes.put(config);
+            }
+            return config;
+        } catch (erro) {
+            console.error("Erro ao carregar configurações do IndexedDB:", erro);
+            return {
+                id: "geral",
+                tituloDoProjeto: "Meu Projeto",
+                tema: "light"
+            };
+        }
+    }
+
+    /**
+     * Atualiza as configurações do aplicativo no IndexedDB.
+     *
+     * @param {Object} alteracoes - Propriedades a serem atualizadas (ex: { tituloDoProjeto: "Novo Título", tema: "dark" }).
+     * @returns {Promise<{id: string, tituloDoProjeto: string, tema: "dark" | "light"}>} Configuração atualizada.
+     */
+    async atualizarConfiguracoes(alteracoes) {
+        try {
+            if (!alteracoes || typeof alteracoes !== "object") {
+                return await this.carregarConfiguracoes();
+            }
+
+            const configAtual = await this.carregarConfiguracoes();
+            const configAtualizada = {
+                ...configAtual,
+                ...alteracoes,
+                id: "geral"
+            };
+
+            await this.banco.configuracoes.put(configAtualizada);
+            return configAtualizada;
+        } catch (erro) {
+            console.error("Erro ao atualizar configurações no IndexedDB:", erro);
+            throw erro;
+        }
+    }
+
+    /**
+     * Salva as configurações do aplicativo no IndexedDB (alias para atualizarConfiguracoes).
+     *
+     * @param {Object} alteracoes - Propriedades a serem atualizadas.
+     * @returns {Promise<{id: string, tituloDoProjeto: string, tema: "dark" | "light"}>}
+     */
+    async salvarConfiguracoes(alteracoes) {
+        return await this.atualizarConfiguracoes(alteracoes);
     }
 }
 

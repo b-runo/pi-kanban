@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>K-Off - Kanban Offline</title>
     <link rel="stylesheet" href="css/estilo.css">
     <link rel="stylesheet" href="css/icones.css">
@@ -13,14 +13,18 @@
     <header class="cabecalho-principal">
         <div class="barra-superior">
             <div class="container-logo">
-                <h1>K-Off - Kanban Offline</h1>
+                <img src="/img/k-off-logo.svg" alt="Logo">
+                <div class="texto-logo">
+                    <h1>K-Off</h1>
+                    <h2>Seu Kanban Offline</h2>
+                </div>
             </div>
             <nav class="menu">
                 <i class="icon icon-menu-05"></i>
             </nav>
         </div>
         <div class="barra-acoes">
-            <div class="nome-projeto">Meu Projeto</div>
+            <div class="nome-projeto" tabindex="0" title="Clique para editar o título do projeto">Meu Projeto</div>
             <button type="button" id="botao-adicionar-coluna" class="botao-acao-coluna">+ Nova Coluna</button>
         </div>
     </header>
@@ -36,9 +40,7 @@
         <div class="modal-conteudo">
             <header class="modal-cabecalho">
                 <div class="modal-info-coluna">
-                    <span id="modal-cartao-coluna" class="nome-coluna" role="button" tabindex="0"
-                        title="Clique para alterar a coluna"></span>
-                    <select id="modal-cartao-coluna-select" class="select-coluna-inline oculto"
+                    <select id="modal-cartao-coluna-select" class="select-coluna-inline"
                         aria-label="Alterar coluna"></select>
                 </div>
                 <button type="button" id="modal-botao-fechar" class="botao-fechar-modal" aria-label="Fechar popup">
@@ -57,7 +59,7 @@
                 <div class="grupo-coluna">
                     <!-- Data de Entrega -->
                     <div class="coluna-50 grupo-campo">
-                        <label for="modal-cartao-data-entrega" class="rotulo-campo">Data de Entrega:</label>
+                        <label for="modal-cartao-data-entrega" class="rotulo-campo">Prazo:</label>
                         <input type="date" id="modal-cartao-data-entrega" class="campo-input campo-data-hora">
                     </div>
 
@@ -95,8 +97,10 @@
             </div>
 
             <footer class="modal-rodape">
-                <button type="button" id="modal-botao-excluir" class="botao-excluir-modal">Excluir</button>
-                <button type="button" id="modal-botao-concluir" class="botao-concluir-modal">Concluir</button>
+                <button type="button" id="modal-botao-excluir" class="botao-excluir-modal"><i
+                        class="icon icon-trash-02"></i>Excluir</button>
+                <button type="button" id="modal-botao-concluir" class="botao-concluir-modal"><i
+                        class="icon icon-check"></i>Concluir</button>
             </footer>
         </div>
     </div>

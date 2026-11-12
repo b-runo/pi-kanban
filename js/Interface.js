@@ -30,10 +30,10 @@ class GerenciadorDeInterface {
         // Elementos estáticos da interface
         this.containerQuadro = document.getElementById("quadro");
         this.botaoAdicionarColuna = document.getElementById("botao-adicionar-coluna");
+        this.elementoNomeProjeto = document.querySelector(".nome-projeto");
 
         // Elementos do Modal Popup de Detalhes do Cartão
         this.modalCartao = document.getElementById("modal-cartao");
-        this.modalColuna = document.getElementById("modal-cartao-coluna");
         this.modalColunaSelect = document.getElementById("modal-cartao-coluna-select");
         this.modalTitulo = document.getElementById("modal-cartao-titulo");
         this.modalDataEntrega = document.getElementById("modal-cartao-data-entrega");
@@ -54,10 +54,11 @@ class GerenciadorDeInterface {
     /**
      * Inicializa os ouvintes de eventos da interface e renderiza o estado inicial do quadro.
      */
-    inicializar() {
+    async inicializar() {
         this.configurarOuvintesDeEventos();
         this.configurarOuvintesModal();
-        this.renderizarQuadro();
+        await this.carregarConfiguracoesIniciais();
+        await this.renderizarQuadro();
     }
 
     /**
@@ -65,6 +66,16 @@ class GerenciadorDeInterface {
      * Essa técnica poupa memória e garante que elementos criados dinamicamente reajam aos cliques.
      */
     configurarOuvintesDeEventos() {
+        // Título do projeto editável ao receber foco ou clique
+        if (this.elementoNomeProjeto) {
+            this.elementoNomeProjeto.addEventListener("click", () => {
+                this.tornarNomeProjetoEditavel();
+            });
+            this.elementoNomeProjeto.addEventListener("focus", () => {
+                this.tornarNomeProjetoEditavel();
+            });
+        }
+
         // Botão no topo da página para adicionar nova coluna
         if (this.botaoAdicionarColuna) {
             this.botaoAdicionarColuna.addEventListener("click", () => {
@@ -199,15 +210,15 @@ class GerenciadorDeInterface {
     configurarOuvintesModal() {
         // Fechar ao clicar no botão '×'
         if (this.modalBotaoFechar) {
-            this.modalBotaoFechar.addEventListener("click", () => {
-                this.fecharModalCartao();
+            this.modalBotaoFechar.addEventListener("click", async () => {
+                await this.fecharModalCartao();
             });
         }
 
         // Concluir / Fechar ao clicar no botão 'Concluir'
         if (this.modalBotaoConcluir) {
-            this.modalBotaoConcluir.addEventListener("click", () => {
-                this.fecharModalCartao();
+            this.modalBotaoConcluir.addEventListener("click", async () => {
+                await this.fecharModalCartao();
             });
         }
 
@@ -217,7 +228,7 @@ class GerenciadorDeInterface {
                 if (!this.cartaoAbertoAtual) return;
 
                 if (this.cartaoAbertoAtual._isNovo) {
-                    this.fecharModalCartao();
+                    await this.fecharModalCartao(false);
                     return;
                 }
 
@@ -225,59 +236,32 @@ class GerenciadorDeInterface {
                 const confirmou = confirm(`Deseja realmente excluir o cartão "${tituloCartao}"?`);
                 if (confirmou && this.cartaoAbertoAtual.id) {
                     const idCartao = this.cartaoAbertoAtual.id;
-                    this.fecharModalCartao();
                     await this.excluirCartao(idCartao);
+                    await this.fecharModalCartao(false);
                 }
             });
         }
 
         // Fechar ao clicar fora da caixa branca (no fundo translúcido)
         if (this.modalCartao) {
-            this.modalCartao.addEventListener("click", (evento) => {
+            this.modalCartao.addEventListener("click", async (evento) => {
                 if (evento.target === this.modalCartao) {
-                    this.fecharModalCartao();
+                    await this.fecharModalCartao();
                 }
             });
         }
 
         // Fechar ao pressionar a tecla ESC no teclado
-        document.addEventListener("keydown", (evento) => {
+        document.addEventListener("keydown", async (evento) => {
             if (evento.key === "Escape" && this.modalCartao && !this.modalCartao.classList.contains("oculto")) {
-                this.fecharModalCartao();
+                await this.fecharModalCartao();
             }
         });
 
-        // Alternar para select ao clicar no span da coluna (estilo inline)
-        if (this.modalColuna) {
-            const ativarEdicaoColuna = async () => {
-                if (!this.cartaoAbertoAtual) return;
-                await this.abrirSeletorColunaInline();
-            };
-
-            this.modalColuna.addEventListener("click", ativarEdicaoColuna);
-            this.modalColuna.addEventListener("keydown", (evento) => {
-                if (evento.key === "Enter" || evento.key === " ") {
-                    evento.preventDefault();
-                    ativarEdicaoColuna();
-                }
-            });
-        }
-
-        // Ouvintes do select inline de coluna
+        // Ouvinte de alteração da coluna selecionada
         if (this.modalColunaSelect) {
             this.modalColunaSelect.addEventListener("change", async () => {
                 await this.alterarColunaCartaoAberto(this.modalColunaSelect.value);
-            });
-
-            this.modalColunaSelect.addEventListener("blur", () => {
-                this.fecharSeletorColunaInline();
-            });
-
-            this.modalColunaSelect.addEventListener("keydown", (evento) => {
-                if (evento.key === "Escape") {
-                    evento.stopPropagation();
-                    this.fecharSeletorColunaInline();
-                }
             });
         }
 
@@ -298,6 +282,7 @@ class GerenciadorDeInterface {
                         await this.bancoDeDados.atualizarPropriedadesCartao(this.cartaoAbertoAtual.id, {
                             titulo: novoTitulo
                         });
+                        await this.atualizarCartaoNoDOM(this.cartaoAbertoAtual.id);
                     }
                 } else if (!this.cartaoAbertoAtual._isNovo) {
                     this.modalTitulo.value = this.cartaoAbertoAtual.titulo;
@@ -320,6 +305,7 @@ class GerenciadorDeInterface {
                 await this.bancoDeDados.atualizarPropriedadesCartao(this.cartaoAbertoAtual.id, {
                     dataEntrega: this.modalDataEntrega.value
                 });
+                await this.atualizarCartaoNoDOM(this.cartaoAbertoAtual.id);
             });
         }
 
@@ -331,7 +317,7 @@ class GerenciadorDeInterface {
                 await this.bancoDeDados.atualizarPropriedadesCartao(this.cartaoAbertoAtual.id, {
                     prioridade: this.modalPrioridade.value
                 });
-                await this.renderizarQuadro();
+                await this.atualizarCartaoNoDOM(this.cartaoAbertoAtual.id);
             });
         }
 
@@ -343,6 +329,7 @@ class GerenciadorDeInterface {
                 await this.bancoDeDados.atualizarPropriedadesCartao(this.cartaoAbertoAtual.id, {
                     descricao: this.modalDescricao.value.trim()
                 });
+                await this.atualizarCartaoNoDOM(this.cartaoAbertoAtual.id);
             });
         }
 
@@ -372,13 +359,19 @@ class GerenciadorDeInterface {
                 }
             });
 
-            // Ao sair do foco do campo de descrição da tarefa (salva alterações de texto)
+            // Ao sair do foco do campo de descrição da tarefa (salva alterações de texto ou remove se vazio)
             this.modalListaTarefas.addEventListener("focusout", async (evento) => {
                 const inputTexto = evento.target.closest(".input-tarefa");
                 if (inputTexto) {
                     const linha = inputTexto.closest(".linha-tarefa");
                     const idItem = linha.dataset.idItem;
-                    await this.atualizarDescricaoItemTarefa(idItem, inputTexto.value);
+                    const textoLimpo = inputTexto.value.trim();
+
+                    if (!textoLimpo) {
+                        await this.removerItemTarefa(idItem, linha);
+                    } else {
+                        await this.atualizarDescricaoItemTarefa(idItem, inputTexto.value);
+                    }
                 }
             });
 
@@ -551,7 +544,6 @@ class GerenciadorDeInterface {
 
         const indicadorCor = document.createElement("span");
         indicadorCor.className = "indicador-cor-atual";
-        indicadorCor.style.backgroundColor = coluna.cor_destaque || "#9E9E9E";
 
         const textoCorDestaque = document.createElement("span");
         textoCorDestaque.textContent = "Cor de destaque";
@@ -582,7 +574,6 @@ class GerenciadorDeInterface {
         const atualizarCorDestaqueColuna = async (novaCor) => {
             coluna.cor_destaque = novaCor;
             elementoColuna.style.setProperty("--cor-destaque-coluna", novaCor);
-            indicadorCor.style.backgroundColor = novaCor;
             inputCorPersonalizada.value = novaCor;
             try {
                 await this.bancoDeDados.atualizarPropriedadesColuna(coluna.id, { cor_destaque: novaCor });
@@ -614,7 +605,6 @@ class GerenciadorDeInterface {
         inputCorPersonalizada.addEventListener("input", (evento) => {
             coluna.cor_destaque = evento.target.value;
             elementoColuna.style.setProperty("--cor-destaque-coluna", evento.target.value);
-            indicadorCor.style.backgroundColor = evento.target.value;
         });
 
         inputCorPersonalizada.addEventListener("change", async (evento) => {
@@ -643,7 +633,7 @@ class GerenciadorDeInterface {
         botaoExcluirColuna.className = "botao-excluir-coluna opcao-menu-coluna perigo";
         botaoExcluirColuna.title = `Excluir coluna ${coluna.titulo}`;
         botaoExcluirColuna.setAttribute("aria-label", `Excluir coluna ${coluna.titulo}`);
-        botaoExcluirColuna.textContent = "Excluir";
+        botaoExcluirColuna.insertAdjacentHTML('afterbegin', '<i class="icon icon-trash-02"></i> Excluir coluna');
         botaoExcluirColuna.dataset.idColuna = coluna.id;
         botaoExcluirColuna.dataset.tituloColuna = coluna.titulo;
         dropdownAcoes.appendChild(botaoExcluirColuna);
@@ -680,7 +670,7 @@ class GerenciadorDeInterface {
         const botaoAdicionar = document.createElement("button");
         botaoAdicionar.type = "button";
         botaoAdicionar.className = "botao-adicionar-cartao";
-        botaoAdicionar.textContent = "Adicionar Cartão";
+        botaoAdicionar.insertAdjacentHTML('afterbegin', '<i class="icon icon-plus"></i> Adicionar Cartão');
         botaoAdicionar.dataset.idColuna = coluna.id;
         rodape.appendChild(botaoAdicionar);
 
@@ -705,18 +695,6 @@ class GerenciadorDeInterface {
         titulo.textContent = cartao.titulo;
         elementoCartao.appendChild(titulo);
 
-        // Exibição visual da prioridade do cartão com etiqueta destacada
-        if (cartao.prioridade) {
-            const containerPrioridade = document.createElement("span");
-            containerPrioridade.className = `cartao-prioridade cartao-prioridade-${cartao.prioridade}`;
-            const rotulosPrioridade = {
-                alta: "Alta",
-                media: "Média",
-                baixa: "Baixa"
-            };
-            containerPrioridade.textContent = `Prioridade: ${rotulosPrioridade[cartao.prioridade] || cartao.prioridade}`;
-            elementoCartao.appendChild(containerPrioridade);
-        }
 
         if (cartao.descricao && cartao.descricao.trim() !== "") {
             const descricao = document.createElement("p");
@@ -724,25 +702,10 @@ class GerenciadorDeInterface {
             elementoCartao.appendChild(descricao);
         }
 
-        // Se houver data de entrega definida, exibe no cartão
-        if (cartao.dataEntrega) {
-            const containerData = document.createElement("div");
-            containerData.className = "cartao-data-entrega";
-            try {
-                const valorData = cartao.dataEntrega.includes("T") ? cartao.dataEntrega : `${cartao.dataEntrega}T00:00:00`;
-                const dataObj = new Date(valorData);
-                const formatador = new Intl.DateTimeFormat("pt-BR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric"
-                });
-                containerData.textContent = `Entrega: ${formatador.format(dataObj)}`;
-            } catch (e) {
-                containerData.textContent = `Entrega: ${cartao.dataEntrega}`;
-            }
-            containerData.insertAdjacentHTML("afterbegin", "<i class='icon icon-calendar'></i>");
-            elementoCartao.appendChild(containerData);
-        }
+        // Cria uma div para conter as informação de prioridade, prazo e tarefas
+        const containerInfoCartao = document.createElement("div");
+        containerInfoCartao.className = "linha-informacoes-cartao";
+
 
         // Se o cartão possuir subtarefas cadastradas, exibe o indicador em uma div.tarefas
         if (estatisticasTarefas && estatisticasTarefas.total > 0) {
@@ -758,10 +721,130 @@ class GerenciadorDeInterface {
             else {
                 containerTarefas.insertAdjacentHTML("afterbegin", "<i class='icon icon-file-02'></i>");
             }
-            elementoCartao.appendChild(containerTarefas);
+            containerInfoCartao.appendChild(containerTarefas);
         }
 
+        // Se houver data de entrega definida, exibe no cartão
+        if (cartao.dataEntrega) {
+            const containerData = document.createElement("div");
+            containerData.className = "cartao-data-entrega";
+            let iconeAlertaHtml = "";
+            try {
+                const valorData = cartao.dataEntrega.includes("T") ? cartao.dataEntrega : `${cartao.dataEntrega}T00:00:00`;
+                const dataObj = new Date(valorData);
+                const formatador = new Intl.DateTimeFormat("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric"
+                });
+                containerData.textContent = `${formatador.format(dataObj)}`;
+
+                // Cálculo da diferença em dias para determinar alerta de vencimento
+                if (!isNaN(dataObj.getTime())) {
+                    const hoje = new Date();
+                    const dataAtual = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+                    const dataPrazo = new Date(dataObj.getFullYear(), dataObj.getMonth(), dataObj.getDate());
+                    const diferencaTempo = dataPrazo.getTime() - dataAtual.getTime();
+                    const diasRestantes = Math.round(diferencaTempo / (1000 * 60 * 60 * 24));
+
+                    if (diasRestantes < 0) {
+                        containerData.classList.add("prazo-vencido");
+                        iconeAlertaHtml = "<i class='icon icon-clock'></i>";
+                    } else if (diasRestantes === 0 || diasRestantes === 1) {
+                        containerData.classList.add("prazo-a-vencer");
+                        iconeAlertaHtml = "<i class='icon icon-clock'></i>";
+                    } else if (diasRestantes === 2 || diasRestantes === 3) {
+                        containerData.classList.add("prazo-proximo-vencimento");
+                        iconeAlertaHtml = "<i class='icon icon-clock'></i>";
+                    }
+                }
+            } catch (e) {
+                containerData.textContent = `${cartao.dataEntrega}`;
+            }
+            containerData.insertAdjacentHTML("afterbegin", `${iconeAlertaHtml}<i class='icon icon-calendar'></i>`);
+            containerInfoCartao.appendChild(containerData);
+        }
+
+        // Exibição visual da prioridade do cartão com etiqueta destacada
+        if (cartao.prioridade) {
+            const containerPrioridade = document.createElement("span");
+            containerPrioridade.className = `cartao-prioridade cartao-prioridade-${cartao.prioridade}`;
+            const rotulosPrioridade = {
+                alta: "Alta",
+                media: "Média",
+                baixa: "Baixa"
+            };
+            containerPrioridade.textContent = `${rotulosPrioridade[cartao.prioridade] || cartao.prioridade}`;
+            containerInfoCartao.appendChild(containerPrioridade);
+        }
+
+        elementoCartao.appendChild(containerInfoCartao);
+
+
         return elementoCartao;
+    }
+
+    /**
+     * Atualiza visualmente no DOM exclusivamente o cartão especificado, sem re-renderizar
+     * todo o quadro Kanban. Busca o cartão e suas tarefas e realiza a substituição direta.
+     *
+     * @param {string} idCartao - Identificador único do cartão a ser atualizado.
+     * @returns {Promise<void>}
+     */
+    async atualizarCartaoNoDOM(idCartao) {
+        if (!idCartao) return;
+
+        try {
+            const elementoAntigo = this.containerQuadro ? this.containerQuadro.querySelector(`.cartao[data-id="${idCartao}"]`) : null;
+
+            // Busca os dados atualizados do cartão e suas subtarefas em paralelo
+            const [cartao, itens] = await Promise.all([
+                this.bancoDeDados.carregarCartaoPorId(idCartao),
+                this.bancoDeDados.carregarItensPorCartao(idCartao)
+            ]);
+
+            if (!cartao) {
+                // Se o cartão foi excluído do banco, remove do DOM se ainda estiver presente
+                if (elementoAntigo) {
+                    const listaCartoes = elementoAntigo.closest(".lista-de-cartoes");
+                    elementoAntigo.remove();
+                    if (listaCartoes && listaCartoes.querySelectorAll(".cartao").length === 0) {
+                        if (!listaCartoes.querySelector(".aviso-sem-cartoes")) {
+                            const avisoSemCartoes = document.createElement("div");
+                            avisoSemCartoes.className = "aviso-sem-cartoes";
+                            avisoSemCartoes.textContent = "Nenhum cartão nesta coluna";
+                            listaCartoes.appendChild(avisoSemCartoes);
+                        }
+                    }
+                }
+                return;
+            }
+
+            // Calcula as estatísticas de subtarefas para exibição no cartão
+            const stats = { total: 0, concluidas: 0 };
+            if (itens && itens.length > 0) {
+                stats.total = itens.length;
+                stats.concluidas = itens.filter((i) => i.concluido).length;
+            }
+
+            const elementoNovo = this.criarElementoCartao(cartao, stats);
+
+            if (elementoAntigo) {
+                elementoAntigo.replaceWith(elementoNovo);
+            } else if (this.containerQuadro) {
+                // Caso o elemento ainda não esteja no DOM (ex: recém-criado), insere na respectiva coluna
+                const listaCartoes = this.containerQuadro.querySelector(`.lista-de-cartoes[data-identificador-coluna="${cartao.colunaAtual}"]`);
+                if (listaCartoes) {
+                    const avisoVazio = listaCartoes.querySelector(".aviso-sem-cartoes");
+                    if (avisoVazio) {
+                        avisoVazio.remove();
+                    }
+                    listaCartoes.appendChild(elementoNovo);
+                }
+            }
+        } catch (erro) {
+            console.error(`Erro ao atualizar pontualmente o cartão ${idCartao} no DOM:`, erro);
+        }
     }
 
     /**
@@ -771,12 +854,11 @@ class GerenciadorDeInterface {
      */
     async abrirModalCartao(idCartao) {
         try {
-            const [cartoes, colunas] = await Promise.all([
-                this.bancoDeDados.carregarCartoes(),
+            const [cartao, colunas] = await Promise.all([
+                this.bancoDeDados.carregarCartaoPorId(idCartao),
                 this.bancoDeDados.carregarColunas()
             ]);
 
-            const cartao = cartoes.find((c) => c.id === idCartao);
             if (!cartao) {
                 console.error(`Cartão com ID ${idCartao} não encontrado.`);
                 return;
@@ -787,12 +869,18 @@ class GerenciadorDeInterface {
             this.cartaoAbertoAtual = cartao;
             this.colunaAbertaAtual = coluna;
 
-            // Garante que o span esteja visível e o select inline oculto
-            this.fecharSeletorColunaInline();
-
-            // Preenche o cabeçalho e campos com os dados do cartão
-            if (this.modalColuna) {
-                this.modalColuna.textContent = coluna ? coluna.titulo : "Coluna Desconhecida";
+            // Preenche as opções de coluna disponíveis e seleciona a coluna atual do cartão
+            if (this.modalColunaSelect) {
+                this.modalColunaSelect.innerHTML = "";
+                colunas.forEach((col) => {
+                    const opcao = document.createElement("option");
+                    opcao.value = col.id;
+                    opcao.textContent = col.titulo;
+                    if (col.id === cartao.colunaAtual) {
+                        opcao.selected = true;
+                    }
+                    this.modalColunaSelect.appendChild(opcao);
+                });
             }
             if (this.modalTitulo) {
                 this.modalTitulo.disabled = false;
@@ -823,10 +911,40 @@ class GerenciadorDeInterface {
             const itens = await this.bancoDeDados.carregarItensPorCartao(idCartao);
             this.renderizarListaDeTarefas(itens);
 
-            // Exibe o popup e bloqueia o scroll do body
-            if (this.modalCartao) {
-                this.modalCartao.classList.remove("oculto");
-                document.body.classList.add("modal-aberto");
+            // Animação Card to Layout usando View Transitions API com suporte a fallback
+            const elementoCartao = this.containerQuadro ? this.containerQuadro.querySelector(`.cartao[data-id="${idCartao}"]`) : null;
+            const modalConteudo = this.modalCartao ? this.modalCartao.querySelector(".modal-conteudo") : null;
+
+            const exibirModalDOM = () => {
+                if (this.modalCartao) {
+                    this.modalCartao.classList.remove("oculto");
+                    document.body.classList.add("modal-aberto");
+                }
+                if (modalConteudo) {
+                    modalConteudo.style.viewTransitionName = "cartao-ativo";
+                }
+                if (elementoCartao) {
+                    elementoCartao.style.viewTransitionName = "";
+                }
+            };
+
+            if (document.startViewTransition && elementoCartao && modalConteudo) {
+                elementoCartao.style.viewTransitionName = "cartao-ativo";
+                const transicao = document.startViewTransition(() => {
+                    exibirModalDOM();
+                });
+                try {
+                    await transicao.finished;
+                } finally {
+                    if (modalConteudo) {
+                        modalConteudo.style.viewTransitionName = "";
+                    }
+                    if (elementoCartao) {
+                        elementoCartao.style.viewTransitionName = "";
+                    }
+                }
+            } else {
+                exibirModalDOM();
             }
         } catch (erro) {
             console.error("Erro ao abrir modal do cartão:", erro);
@@ -834,62 +952,52 @@ class GerenciadorDeInterface {
     }
 
     /**
-     * Fecha o modal popup de detalhes do cartão e atualiza o quadro para sincronizar alterações.
+     * Fecha o modal popup de detalhes do cartão e atualiza pontualmente o cartão no quadro
+     * caso ele tenha sofrido alterações, sincronizando a animação de retorno estilo card to layout.
      */
-    fecharModalCartao() {
-        this.fecharSeletorColunaInline();
-        if (this.modalCartao) {
-            this.modalCartao.classList.add("oculto");
-        }
-        document.body.classList.remove("modal-aberto");
+    async fecharModalCartao(atualizarDOM = true) {
+        const idCartao = this.cartaoAbertoAtual && !this.cartaoAbertoAtual._isNovo ? this.cartaoAbertoAtual.id : null;
         this.cartaoAbertoAtual = null;
         this.colunaAbertaAtual = null;
-        this.renderizarQuadro();
-    }
 
-    /**
-     * Abre o dropdown inline de seleção de coluna substituindo o span pelo select.
-     */
-    async abrirSeletorColunaInline() {
-        if (!this.modalColunaSelect || !this.modalColuna || !this.cartaoAbertoAtual) return;
+        if (idCartao && atualizarDOM) {
+            await this.atualizarCartaoNoDOM(idCartao);
+        }
 
-        try {
-            const colunas = await this.bancoDeDados.carregarColunas();
-            this.modalColunaSelect.innerHTML = "";
+        const elementoCartao = (idCartao && this.containerQuadro) ? this.containerQuadro.querySelector(`.cartao[data-id="${idCartao}"]`) : null;
+        const modalConteudo = this.modalCartao ? this.modalCartao.querySelector(".modal-conteudo") : null;
 
-            colunas.forEach((coluna) => {
-                const opcao = document.createElement("option");
-                opcao.value = coluna.id;
-                opcao.textContent = coluna.titulo;
-                if (coluna.id === this.cartaoAbertoAtual.colunaAtual) {
-                    opcao.selected = true;
-                }
-                this.modalColunaSelect.appendChild(opcao);
+        const ocultarModalDOM = () => {
+            if (this.modalCartao) {
+                this.modalCartao.classList.add("oculto");
+            }
+            document.body.classList.remove("modal-aberto");
+            if (modalConteudo) {
+                modalConteudo.style.viewTransitionName = "";
+            }
+            if (elementoCartao) {
+                elementoCartao.style.viewTransitionName = "cartao-ativo";
+            }
+        };
+
+        if (document.startViewTransition && modalConteudo && this.modalCartao && !this.modalCartao.classList.contains("oculto")) {
+            modalConteudo.style.viewTransitionName = "cartao-ativo";
+            const transicao = document.startViewTransition(() => {
+                ocultarModalDOM();
             });
-
-            this.modalColuna.classList.add("oculto");
-            this.modalColunaSelect.classList.remove("oculto");
-            this.modalColunaSelect.focus();
-
-            if (typeof this.modalColunaSelect.showPicker === "function") {
-                try {
-                    this.modalColunaSelect.showPicker();
-                } catch (erroPicker) {
-                    // showPicker pode ser bloqueado ou não suportado
+            try {
+                await transicao.finished;
+            } finally {
+                if (elementoCartao) {
+                    elementoCartao.style.viewTransitionName = "";
+                }
+                if (modalConteudo) {
+                    modalConteudo.style.viewTransitionName = "";
                 }
             }
-        } catch (erro) {
-            console.error("Erro ao carregar colunas para seleção:", erro);
+        } else {
+            ocultarModalDOM();
         }
-    }
-
-    /**
-     * Fecha o dropdown inline de seleção de coluna e volta a exibir o span com o nome da coluna.
-     */
-    fecharSeletorColunaInline() {
-        if (!this.modalColunaSelect || !this.modalColuna) return;
-        this.modalColunaSelect.classList.add("oculto");
-        this.modalColuna.classList.remove("oculto");
     }
 
     /**
@@ -902,7 +1010,6 @@ class GerenciadorDeInterface {
 
         const colunaOrigemId = this.cartaoAbertoAtual.colunaAtual;
         if (colunaOrigemId === novaColunaId) {
-            this.fecharSeletorColunaInline();
             return;
         }
 
@@ -975,17 +1082,11 @@ class GerenciadorDeInterface {
 
             this.colunaAbertaAtual = novaColuna;
 
-            if (this.modalColuna) {
-                this.modalColuna.textContent = novaColuna ? novaColuna.titulo : "Coluna Desconhecida";
-            }
-
-            this.fecharSeletorColunaInline();
             if (!this.cartaoAbertoAtual._isNovo) {
                 await this.renderizarQuadro();
             }
         } catch (erro) {
             console.error("Erro ao alterar coluna do cartão:", erro);
-            this.fecharSeletorColunaInline();
         }
     }
 
@@ -1057,6 +1158,18 @@ class GerenciadorDeInterface {
     async adicionarNovaTarefa() {
         if (!this.cartaoAbertoAtual || this.cartaoAbertoAtual._isNovo) return;
 
+        // Verifica se o último item da lista está preenchido antes de adicionar um novo
+        if (this.modalListaTarefas) {
+            const inputsTarefas = this.modalListaTarefas.querySelectorAll(".input-tarefa");
+            if (inputsTarefas.length > 0) {
+                const ultimoInput = inputsTarefas[inputsTarefas.length - 1];
+                if (!ultimoInput.value.trim()) {
+                    ultimoInput.focus();
+                    return;
+                }
+            }
+        }
+
         try {
             const itensExistentes = await this.bancoDeDados.carregarItensPorCartao(this.cartaoAbertoAtual.id);
             const ordemNovoItem = itensExistentes.reduce((maximo, item) => {
@@ -1076,6 +1189,9 @@ class GerenciadorDeInterface {
             const elementoLinha = this.criarElementoLinhaTarefa(novoItem);
             this.modalListaTarefas.appendChild(elementoLinha);
 
+            // Atualiza pontualmente o indicador de subtarefas no cartão do quadro
+            await this.atualizarCartaoNoDOM(this.cartaoAbertoAtual.id);
+
             // Coloca o foco imediatamente no input recém-criado para digitação imediata
             const inputCriado = elementoLinha.querySelector(".input-tarefa");
             if (inputCriado) {
@@ -1087,7 +1203,8 @@ class GerenciadorDeInterface {
     }
 
     /**
-     * Atualiza o estado de conclusão de um item de tarefa no banco de dados.
+     * Atualiza o estado de conclusão de um item de tarefa no banco de dados
+     * e sincroniza o contador de progresso no cartão no quadro.
      *
      * @param {string} idItem - Identificador único do item.
      * @param {boolean} concluido - Novo estado de conclusão.
@@ -1097,6 +1214,7 @@ class GerenciadorDeInterface {
 
         try {
             await this.bancoDeDados.atualizarPropriedadesItemCartao(idItem, { concluido: Boolean(concluido) });
+            await this.atualizarCartaoNoDOM(this.cartaoAbertoAtual.id);
         } catch (erro) {
             console.error(`Erro ao atualizar status da tarefa ${idItem}:`, erro);
         }
@@ -1119,7 +1237,8 @@ class GerenciadorDeInterface {
     }
 
     /**
-     * Exclui um item de tarefa do banco de dados e remove sua linha da interface.
+     * Exclui um item de tarefa do banco de dados e remove sua linha da interface,
+     * sincronizando pontualmente o contador de progresso no cartão.
      *
      * @param {string} idItem - Identificador único da tarefa.
      * @param {HTMLElement} elementoLinha - Elemento DOM da linha da tarefa.
@@ -1129,6 +1248,9 @@ class GerenciadorDeInterface {
             await this.bancoDeDados.excluirItemCartao(idItem);
             if (elementoLinha) {
                 elementoLinha.remove();
+            }
+            if (this.cartaoAbertoAtual) {
+                await this.atualizarCartaoNoDOM(this.cartaoAbertoAtual.id);
             }
         } catch (erro) {
             console.error(`Erro ao remover a tarefa ${idItem}:`, erro);
@@ -1148,10 +1270,16 @@ class GerenciadorDeInterface {
         if (placeholderExistente) {
             const inputExistente = placeholderExistente.querySelector(".input-titulo-coluna-placeholder");
             if (inputExistente) {
-                inputExistente.focus();
+                // preventScroll evita que o navegador tente rolar a tela antes da nossa animação
+                inputExistente.focus({ preventScroll: true });
                 inputExistente.select();
             }
-            placeholderExistente.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "end" });
+
+            // Timeout garante que o teclado abrindo não cancele a animação do scroll
+            setTimeout(() => {
+                placeholderExistente.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+            }, 150);
+
             return placeholderExistente;
         }
 
@@ -1160,12 +1288,18 @@ class GerenciadorDeInterface {
 
         const inputTitulo = elementoPlaceholder.querySelector(".input-titulo-coluna-placeholder");
         if (inputTitulo) {
-            inputTitulo.focus();
+            // preventScroll evita o conflito de rolagem
+            inputTitulo.focus({ preventScroll: true });
         }
 
-        elementoPlaceholder.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "end" });
+        // Aguarda a renderização e o evento de teclado para rolar a coluna inteira para a tela
+        setTimeout(() => {
+            elementoPlaceholder.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        }, 150);
+
         return elementoPlaceholder;
     }
+
 
     /**
      * Cria e retorna o elemento DOM correspondente a uma coluna placeholder (fantasma).
@@ -1195,6 +1329,10 @@ class GerenciadorDeInterface {
         // 1.5. Seletor de cor de destaque para a coluna
         const divCorDestaque = document.createElement("div");
         divCorDestaque.className = "cor-destaque";
+
+        const labelCorDestaque = document.createElement("span");
+        labelCorDestaque.textContent = "Cor de destaque:";
+        divCorDestaque.appendChild(labelCorDestaque);
 
         const corPadrao = "#9E9E9E";
         let corDestaqueSelecionada = corPadrao;
@@ -1255,16 +1393,11 @@ class GerenciadorDeInterface {
         const corpoVazio = document.createElement("div");
         corpoVazio.className = "placeholder-corpo-vazio";
 
-        const textoInstrucao = document.createElement("span");
-        textoInstrucao.textContent = "Nova Coluna";
-
-        const dica = document.createElement("span");
-        dica.className = "placeholder-dica";
 
         const botaoCriar = document.createElement("button");
         botaoCriar.type = "button";
         botaoCriar.className = "botao-criar-coluna";
-        botaoCriar.textContent = "Criar";
+        botaoCriar.textContent = "Criar coluna";
         botaoCriar.title = "Criar coluna";
         botaoCriar.setAttribute("aria-label", "Criar coluna");
 
@@ -1277,10 +1410,8 @@ class GerenciadorDeInterface {
             await salvar();
         });
 
-        dica.appendChild(botaoCriar);
+        corpoVazio.appendChild(botaoCriar);
 
-        corpoVazio.appendChild(textoInstrucao);
-        corpoVazio.appendChild(dica);
         elementoColuna.appendChild(corpoVazio);
 
         let processado = false;
@@ -1445,12 +1576,18 @@ class GerenciadorDeInterface {
             this.cartaoAbertoAtual = novoCartao;
             this.colunaAbertaAtual = coluna;
 
-            // Garante que o seletor inline de coluna esteja fechado
-            this.fecharSeletorColunaInline();
-
-            // Configura o cabeçalho e reseta os campos
-            if (this.modalColuna) {
-                this.modalColuna.textContent = coluna ? coluna.titulo : "Coluna Desconhecida";
+            // Configura as opções do select de coluna com a coluna informada selecionada
+            if (this.modalColunaSelect) {
+                this.modalColunaSelect.innerHTML = "";
+                colunas.forEach((col) => {
+                    const opcao = document.createElement("option");
+                    opcao.value = col.id;
+                    opcao.textContent = col.titulo;
+                    if (col.id === identificadorColuna) {
+                        opcao.selected = true;
+                    }
+                    this.modalColunaSelect.appendChild(opcao);
+                });
             }
             if (this.modalTitulo) {
                 this.modalTitulo.disabled = false;
@@ -1608,6 +1745,89 @@ class GerenciadorDeInterface {
 
         elementoTitulo.addEventListener("keydown", manipularKeydown);
         elementoTitulo.addEventListener("blur", finalizarEdicao, { once: true });
+    }
+
+    /**
+     * Carrega as configurações salvas no IndexedDB e aplica à interface inicial.
+     *
+     * @returns {Promise<void>}
+     */
+    async carregarConfiguracoesIniciais() {
+        try {
+            const config = await this.bancoDeDados.carregarConfiguracoes();
+            const titulo = (config && config.tituloDoProjeto && config.tituloDoProjeto.trim())
+                ? config.tituloDoProjeto.trim()
+                : "Meu Projeto";
+
+            if (this.elementoNomeProjeto) {
+                this.elementoNomeProjeto.textContent = titulo;
+            }
+        } catch (erro) {
+            console.error("Erro ao carregar configurações iniciais na interface:", erro);
+            if (this.elementoNomeProjeto) {
+                this.elementoNomeProjeto.textContent = "Meu Projeto";
+            }
+        }
+    }
+
+    /**
+     * Torna o título do projeto editável (contenteditable) e persiste a alteração na tabela 'configuracoes'.
+     * Segue o mesmo padrão de edição dos títulos das colunas.
+     */
+    tornarNomeProjetoEditavel() {
+        const elemento = this.elementoNomeProjeto;
+        if (!elemento || elemento.isContentEditable) return;
+
+        const tituloOriginal = elemento.textContent.trim() || "Meu Projeto";
+        let cancelado = false;
+
+        elemento.contentEditable = "true";
+        elemento.focus();
+
+        // Seleciona todo o conteúdo de texto para digitação imediata
+        try {
+            const selecao = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(elemento);
+            selecao.removeAllRanges();
+            selecao.addRange(range);
+        } catch (erroSelecao) {
+            // Em caso de falha silenciosa de seleção
+        }
+
+        const manipularKeydown = (evento) => {
+            if (evento.key === "Enter") {
+                evento.preventDefault();
+                elemento.blur();
+            } else if (evento.key === "Escape") {
+                evento.preventDefault();
+                cancelado = true;
+                elemento.blur();
+            }
+        };
+
+        const finalizarEdicao = async () => {
+            elemento.removeEventListener("keydown", manipularKeydown);
+            elemento.contentEditable = "false";
+
+            if (cancelado) {
+                elemento.textContent = tituloOriginal;
+                return;
+            }
+
+            const novoTitulo = elemento.textContent.trim() || "Meu Projeto";
+            elemento.textContent = novoTitulo;
+
+            try {
+                await this.bancoDeDados.atualizarConfiguracoes({ tituloDoProjeto: novoTitulo });
+            } catch (erro) {
+                console.error("Erro ao salvar título do projeto nas configurações:", erro);
+                elemento.textContent = tituloOriginal;
+            }
+        };
+
+        elemento.addEventListener("keydown", manipularKeydown);
+        elemento.addEventListener("blur", finalizarEdicao, { once: true });
     }
 }
 
