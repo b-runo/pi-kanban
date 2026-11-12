@@ -1,0 +1,1044 @@
+/* ==========================================================================
+   Estilos Minimalistas - Kanban K-Off
+   Finalidade: Apenas fornecer estrutura básica em Flexbox para o quadro
+   e colunas, permitindo que a personalização visual seja feita livremente.
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+::-webkit-scrollbar {
+    width: 3px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 5px;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f7f7;
+    color: #1b1f23;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+body.modal-aberto {
+    overflow: hidden;
+}
+
+header.cabecalho-principal {
+    padding: 1rem;
+    flex-shrink: 0;
+}
+
+main {
+    flex: 1;
+    display: flex;
+}
+
+.barra-superior {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.barra-acoes {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: .5rem;
+}
+
+.barra-acoes .nome-projeto {
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.barra-acoes .nome-projeto[contenteditable="true"] {
+    color: #007bff;
+    outline: none;
+    cursor: text;
+}
+
+.barra-acoes .botao-acao-coluna {
+    cursor: pointer;
+    padding: .5rem .9rem;
+    font-size: 0.9rem;
+    background-color: #2c3e50;
+    color: #ffffff;
+    border: none;
+    border-radius: .3rem;
+}
+
+.barra-acoes .botao-acao-coluna:hover {
+    background-color: #34495e;
+}
+
+.container-logo {
+    display: flex;
+    font-size: .8rem;
+    align-items: center;
+}
+
+.container-logo .texto-logo {
+    margin-left: .5rem;
+}
+
+.container-logo img {
+    width: 3.5rem;
+}
+
+.container-logo h1 {
+    font-size: 1.2rem;
+}
+
+.container-logo h2 {
+    font-size: .85rem;
+    font-weight: 200;
+}
+
+.barra-superior .menu {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: .5rem;
+    cursor: pointer;
+    transition: background-color .2s ease-in-out;
+}
+
+.barra-superior .menu:hover {
+    background-color: #c0e4e2
+}
+
+/* Contêiner principal do quadro Kanban (organização horizontal) */
+#quadro {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding: 1rem;
+    min-height: 200px;
+    flex: 1;
+}
+
+/* Estado vazio quando não há colunas cadastradas */
+.estado-vazio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 40px auto;
+    padding: 24px;
+    background-color: #ffffff;
+    border: 1px dashed #ccc;
+    border-radius: 6px;
+}
+
+.mensagem-vazio {
+    font-size: 1rem;
+    color: #666;
+}
+
+/* Estrutura de cada coluna */
+.coluna {
+    background-color: #fff;
+    width: 90vw;
+    max-width: 350px;
+    min-width: 260px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    border-radius: 1rem;
+    position: relative;
+}
+
+.coluna:before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3rem;
+    border-radius: 1rem 0 0 0;
+    aspect-ratio: 1 / 1;
+    background-size: 100% 100%;
+    background-position: 0px 0px;
+    background-image: radial-gradient(100% 100% at -0% -0%, var(--cor-destaque-coluna) -200%, #FF000000 100%);
+    pointer-events: none;
+}
+
+/* Cabeçalho da coluna com título e botão de exclusão */
+.cabecalho-coluna {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cabecalho-coluna:before {
+    content: '';
+    display: block;
+    aspect-ratio: 1 / 1;
+    width: .5rem;
+    background-color: var(--cor-destaque-coluna);
+    margin: 0 .5rem;
+    border-radius: 50%;
+    box-shadow: 0 0 0px 5px color-mix(in srgb, var(--cor-destaque-coluna) 10%, transparent);
+    transition: background-color .15s ease-in-out;
+}
+
+.cabecalho-coluna h2 {
+    font-size: 1.1rem;
+    flex: 1;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.cabecalho-coluna h2[contenteditable="true"] {
+    color: #007bff;
+    outline: none;
+    cursor: text;
+}
+
+/* Menu de ações da coluna */
+.menu-acoes-coluna {
+    position: relative;
+    display: inline-block;
+}
+
+.botao-menu-acoes-coluna {
+    width: 2rem;
+    aspect-ratio: 1 / 1;
+    border: 1px solid #eee;
+    border-radius: 2rem;
+    background-color: transparent;
+    font-size: 1.35rem;
+    color: #888;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.botao-menu-acoes-coluna:hover {
+    color: #333;
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+.dropdown-acoes-coluna {
+    position: absolute;
+    top: calc(100% + .25rem);
+    right: 0;
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: .6rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    padding: .25rem;
+    z-index: 50;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdown-acoes-coluna.oculto {
+    display: none !important;
+}
+
+.opcao-menu-coluna {
+    background: transparent;
+    border: none;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    cursor: pointer;
+    padding: .5rem;
+    border-radius: .5rem;
+    text-align: left;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-family: inherit;
+    transition: background-color 0.15s, color 0.15s;
+    box-sizing: border-box;
+}
+
+.opcao-menu-coluna:hover {
+    color: #1a252f;
+    background-color: #f0f2f5;
+}
+
+.dropdown-acoes-coluna .botao-excluir-coluna,
+.opcao-menu-coluna.perigo {
+    color: #c00;
+}
+
+.dropdown-acoes-coluna .botao-excluir-coluna:hover,
+.opcao-menu-coluna.perigo:hover {
+    color: #a00;
+    background-color: #ffebee;
+}
+
+.divisor-menu-coluna {
+    height: 1px;
+    background-color: #e2e8f0;
+    margin: 4px 0;
+}
+
+.indicador-cor-atual {
+    display: inline-block;
+    width: .75rem;
+    height: .75rem;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    flex-shrink: 0;
+    background-color: var(--cor-destaque-coluna);
+}
+
+.container-seletor-cor-dropdown {
+    padding: 0 .25rem;
+}
+
+.container-seletor-cor-dropdown.oculto {
+    display: none !important;
+}
+
+.container-seletor-cor-dropdown .cor-destaque {
+    margin: .5rem 0;
+    padding: .5rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.aviso-sem-cartoes {
+    font-size: 0.85rem;
+    color: #888;
+    text-align: center;
+    padding: 1.5rem 0;
+}
+
+/* Coluna fantasma / placeholder para criação de nova coluna */
+.coluna-placeholder {
+    border: 1px dashed #e0e0e0;
+}
+
+.coluna-placeholder:focus-within {
+    border-color: #2c3e50;
+}
+
+.input-titulo-coluna-placeholder {
+    width: 100%;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.input-titulo-coluna-placeholder:focus {
+    box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.2);
+}
+
+/* Seletor de cor de destaque da coluna placeholder */
+.cor-destaque {
+    display: flex;
+    flex-direction: column;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: .5rem;
+    gap: .5rem;
+    margin: .5rem 0;
+    padding: .5rem;
+}
+
+.cor-destaque span {
+    font-size: 0.85rem;
+    color: #2c3e50;
+}
+
+.opcoes-cores-predefinidas {
+    display: flex;
+    gap: .3rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.botao-cor-opcao {
+    flex: 1;
+    height: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: .5rem;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    padding: 0;
+}
+
+.botao-cor-opcao:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.botao-cor-opcao:focus-visible {
+    outline: 2px solid #2c3e50;
+}
+
+.input-cor-personalizada {
+    width: 100%;
+    height: 2rem;
+    padding: .2rem;
+    border: 1px solid #ced4da;
+    border-radius: .3rem;
+    background: #ffffff;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.placeholder-corpo-vazio {
+    font-size: 0.85rem;
+}
+
+
+.botao-criar-coluna {
+    cursor: pointer;
+    padding: 1rem;
+    font-size: 0.85rem;
+    width: 100%;
+    border: 1px dashed #004d40;
+    background: #ecf9f8;
+    border-radius: 0.75rem;
+    color: #004d40;
+    font-weight: 200;
+    user-select: none;
+    transition: transform 0.05s ease-in-out;
+}
+
+.botao-criar-coluna:active {
+    border-style: solid;
+    transform: scale(.99);
+}
+
+/* Rodapé da coluna */
+.rodape-coluna {
+    display: flex;
+}
+
+/* Botão simples para adicionar cartão */
+.botao-adicionar-cartao {
+    cursor: pointer;
+    padding: 1rem;
+    font-size: 0.85rem;
+    width: 100%;
+    border: 1px dashed #004d40;
+    background: #ecf9f8;
+    border-radius: 0.75rem;
+    color: #004d40;
+    font-weight: 200;
+    opacity: 0.75;
+    user-select: none;
+    transition: transform 0.05s ease-in-out;
+}
+
+.botao-adicionar-cartao:hover {
+    opacity: 1;
+}
+
+.botao-adicionar-cartao:active {
+    border-style: solid;
+    transform: scale(.99);
+}
+
+/* Área onde os cartões serão renderizados e arrastados */
+.lista-de-cartoes {
+    min-height: 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+/* Estrutura visual básica do cartão (Fase 3: CRUD e Interface) */
+.cartao {
+    background-color: #ffffff;
+    padding: .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #eee;
+}
+
+.cartao:has(.tarefas-concluidas) {
+    border-color: #c8e6c9;
+    background-image: linear-gradient(215deg, #c8e6c987 0%, transparent 25%);
+}
+
+.cartao h3 {
+    font-size: 0.95rem;
+    word-break: break-word;
+}
+
+.cartao p {
+    font-size: 0.85rem;
+    color: #555;
+    word-break: break-word;
+}
+
+.cartao .linha-informacoes-cartao {
+    display: flex;
+    align-items: center;
+    padding-top: 1rem;
+}
+
+.cartao-data-entrega {
+    font-size: 0.75rem;
+    color: #1b1f23;
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 1rem;
+    padding: .2rem .75rem .2rem .5rem;
+    display: inline-block;
+}
+
+.linha-informacoes-cartao:has(.tarefas-concluidas) .cartao-data-entrega {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-color: #c8e6c9;
+}
+
+.linha-informacoes-cartao:has(.tarefas-concluidas) .cartao-data-entrega i.icon-clock {
+    color: #2e7d32;
+}
+
+.cartao-data-entrega.prazo-proximo-vencimento {
+    border-left-color: #FF9800;
+}
+
+.cartao-data-entrega.prazo-a-vencer {
+    border-left-color: #c62828;
+}
+
+.cartao-data-entrega.prazo-vencido {
+    border-color: #c62828;
+    color: #c62828;
+    font-weight: bold;
+}
+
+.cartao-data-entrega i {
+    margin-right: 0.3rem;
+}
+
+.cartao-data-entrega.prazo-proximo-vencimento .icon.icon-clock {
+    color: #FF9800;
+}
+
+.cartao-data-entrega.prazo-a-vencer .icon.icon-clock {
+    color: #c62828;
+}
+
+/* Indicador visual de prioridade no cartão */
+.cartao-prioridade {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: .2rem .75rem;
+    border-radius: 1rem;
+    display: inline-block;
+    margin-left: auto;
+    border: 2px solid #dee2e6;
+}
+
+.cartao-prioridade-baixa {
+    background-color: #e3ebf3;
+    color: #1565c0;
+    border-color: #2970c2;
+}
+
+.cartao-prioridade-media {
+    background-color: #fefbf6;
+    color: #f9a825;
+    border-color: #FF9800;
+}
+
+.cartao-prioridade-alta {
+    background-color: #ffebee;
+    color: #c62828;
+    border-color: #ffcdd2;
+}
+
+/* Indicador visual de progresso de subtarefas no cartão */
+.cartao .tarefas {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #1b1f23;
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 1rem;
+    padding: .2rem .75rem .2rem .5rem;
+    display: inline-block;
+    margin-right: .5rem;
+}
+
+.cartao .tarefas i {
+    margin-right: 0.3rem;
+}
+
+.cartao .tarefas.tarefas-concluidas {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-color: #c8e6c9;
+}
+
+.botao-excluir-cartao {
+    align-self: flex-end;
+    cursor: pointer;
+    background: #ffeded;
+    border: 1px solid #ffcccc;
+    border-radius: 3px;
+    padding: .2rem .75rem;
+    font-size: 0.75rem;
+    color: #c00;
+}
+
+.cartao:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   Estilos do Modal Popup de Detalhes do Cartão e Tarefas
+   ========================================================================== */
+
+/* Classe utilitária para ocultar elementos */
+.oculto {
+    display: none !important;
+}
+
+/* Fundo semitransparente (overlay) cobrindo a tela inteira */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.modal-overlay:not(.oculto) {
+    animation: modal-overlay-fade-in 0.25s ease-out;
+}
+
+@keyframes modal-overlay-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ==========================================================================
+   Animação Card to Layout (View Transitions API)
+   ========================================================================== */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+::view-transition-group(cartao-ativo) {
+    animation-duration: 0.28s;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+/* Configuração para impedir distorção anamórfica dos snapshots */
+::view-transition-old(cartao-ativo),
+::view-transition-new(cartao-ativo) {
+    height: 100%;
+    overflow: hidden;
+    object-fit: none;
+    object-position: top left;
+}
+
+/* Esmaecimento rápido da captura do cartão antigo para evitar distorção esticada */
+::view-transition-old(cartao-ativo) {
+    animation: 0.08s ease-out both fade-out-cartao;
+    mix-blend-mode: normal;
+}
+
+/* Esmaecimento de entrada do novo conteúdo (layout do modal) */
+::view-transition-new(cartao-ativo) {
+    animation: 0.2s ease-in both fade-in-cartao;
+    mix-blend-mode: normal;
+}
+
+@keyframes fade-out-cartao {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes fade-in-cartao {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Caixa de conteúdo centralizada do modal */
+.modal-conteudo {
+    background-color: #ffffff;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 90vh;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow: hidden;
+}
+
+/* Cabeçalho do modal */
+.modal-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    flex-shrink: 0;
+}
+
+.modal-info-coluna {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.modal-info-coluna .rotulo-coluna {
+    font-weight: 600;
+    margin-right: 6px;
+}
+
+.modal-info-coluna .select-coluna-inline {
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #2c3e50;
+    background-color: #e9ecef;
+    border: 1px solid #cfcfcf;
+    border-radius: 1rem;
+    padding: .45rem .8rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.modal-info-coluna .select-coluna-inline:hover {
+    background-color: #dde2e6;
+    color: #1a252f;
+    border-color: #ccd0d5;
+}
+
+.botao-fechar-modal {
+    width: 2rem;
+    aspect-ratio: 1 / 1;
+    border: none;
+    border-radius: 2rem;
+    background-color: transparent;
+    font-size: 1.35rem;
+    color: #888;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.botao-fechar-modal:hover {
+    color: #333;
+    background-color: #f1f1f1;
+}
+
+/* Corpo do modal */
+.modal-corpo {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: .5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.modal-cartao-titulo-input {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.grupo-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.grupo-coluna {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.coluna-50 {
+    flex: 1;
+}
+
+.rotulo-campo {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.campo-input,
+.campo-textarea {
+    padding: .5rem .75rem;
+    border: 1px solid #ced4da;
+    border-radius: .3rem;
+    height: 2.5rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background-color: #ffffff;
+    color: #333;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.campo-input:focus,
+.campo-textarea:focus {
+    outline: none;
+    border-color: #2c3e50;
+}
+
+.campo-input:disabled,
+.campo-textarea:disabled {
+    background-color: #f1f3f5;
+    color: #868e96;
+    cursor: not-allowed;
+    border-color: #e9ecef;
+}
+
+.campo-data-hora {
+    padding: 0;
+    text-align: center;
+}
+
+.campo-data-hora[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.campo-data-hora[type="date"]::-webkit-calendar-picker-indicator,
+.campo-data-hora[type="date"]::-webkit-inner-spin-button,
+.campo-data-hora[type="date"]::-webkit-clear-button {
+    display: none;
+}
+
+
+.campo-select-prioridade {
+    max-width: 240px;
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+.campo-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Seção de Tarefas (subitens do cartão) */
+.secao-tarefas {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    border-top: 1px solid #eee;
+    padding: .8rem 0;
+}
+
+.cabecalho-secao-tarefas {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.botao-adicionar-tarefa {
+    cursor: pointer;
+    padding: .5rem .8rem;
+    font-size: 0.85rem;
+    background-color: #27ae60;
+    color: #ffffff;
+    border: none;
+    border-radius: .5rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.botao-adicionar-tarefa:hover {
+    background-color: #219150;
+}
+
+.lista-tarefas {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+/* Rodapé do modal */
+.modal-rodape {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+    flex-shrink: 0;
+}
+
+.modal-rodape:empty {
+    display: none;
+}
+
+.botao-excluir-modal {
+    cursor: pointer;
+    background-color: transparent;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+    padding: .5rem 1rem;
+    border-radius: .5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.botao-excluir-modal:hover {
+    background-color: #e74c3c;
+    color: #ffffff;
+}
+
+.botao-concluir-modal {
+    margin-left: auto;
+    cursor: pointer;
+    background-color: #2c3e50;
+    color: #ffffff;
+    border: 1px solid #2c3e50;
+    padding: .5rem 1rem;
+    border-radius: .5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.botao-concluir-modal:hover {
+    background-color: #34495e;
+}
+
+.modal-rodape button i {
+    margin-right: .5rem;
+}
+
+/* Linha de cada tarefa */
+.linha-tarefa {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background-color: #f8f9fa;
+    border-radius: .5rem;
+    padding: .25rem .75rem;
+}
+
+.checkbox-tarefa {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+.input-tarefa {
+    flex: 1;
+    border: none;
+    border-radius: .25rem;
+    padding: .5rem .5rem;
+    font-size: 0.85rem;
+    font-family: inherit;
+    background-color: #ffffff;
+    color: #4a5560;
+}
+
+.input-tarefa:focus {
+    outline: 1px solid #2c3e50;
+}
+
+.input-tarefa.concluida {
+    text-decoration: line-through;
+    color: #607d8b;
+    background-color: #f8f9fa;
+    pointer-events: none;
+}
+
+.botao-remover-tarefa {
+    width: 1.5rem;
+    aspect-ratio: 1 / 1;
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    color: #999;
+    cursor: pointer;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.botao-remover-tarefa:hover {
+    color: #e74c3c;
+    background-color: #fdedec;
+}
+
+
+@media screen and (max-width: 767px) {
+    .coluna {
+        flex: none;
+        max-width: none;
+    }
+
+    .barra-acoes .nome-projeto {
+        flex: 1;
+    }
+}

@@ -3,12 +3,140 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanban PI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>K-Off - Kanban Offline</title>
+    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="stylesheet" href="css/icones.css">
 </head>
 
 <body>
-    Kanban PI
+    <header class="cabecalho-principal">
+        <div class="barra-superior">
+            <div class="container-logo">
+                <img src="/img/k-off-logo.svg" alt="Logo">
+                <div class="texto-logo">
+                    <h1>K-Off</h1>
+                    <h2>Seu Kanban Offline</h2>
+                </div>
+            </div>
+            <nav class="menu">
+                <i class="icon icon-menu-05"></i>
+            </nav>
+        </div>
+        <div class="barra-acoes">
+            <div class="nome-projeto" tabindex="0" title="Clique para editar o título do projeto">Meu Projeto</div>
+            <button type="button" id="botao-adicionar-coluna" class="botao-acao-coluna">+ Nova Coluna</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Contêiner principal do quadro Kanban renderizado dinamicamente -->
+        <div id="quadro"></div>
+    </main>
+
+    <!-- Modal Popup de Detalhes e Tarefas do Cartão -->
+    <div id="modal-cartao" class="modal-overlay oculto" role="dialog" aria-modal="true"
+        aria-labelledby="modal-cartao-titulo">
+        <div class="modal-conteudo">
+            <header class="modal-cabecalho">
+                <div class="modal-info-coluna">
+                    <select id="modal-cartao-coluna-select" class="select-coluna-inline"
+                        aria-label="Alterar coluna"></select>
+                </div>
+                <button type="button" id="modal-botao-fechar" class="botao-fechar-modal" aria-label="Fechar popup">
+                    <i class="icon icon-x-close"></i>
+                </button>
+            </header>
+
+            <div class="modal-corpo">
+                <!-- Título do Cartão (Editável) -->
+                <div class="grupo-campo">
+                    <label for="modal-cartao-titulo" class="rotulo-campo">Título:</label>
+                    <input type="text" id="modal-cartao-titulo" class="campo-input modal-cartao-titulo-input"
+                        placeholder="Título do cartão...">
+                </div>
+
+                <div class="grupo-coluna">
+                    <!-- Data de Entrega -->
+                    <div class="coluna-50 grupo-campo">
+                        <label for="modal-cartao-data-entrega" class="rotulo-campo">Prazo:</label>
+                        <input type="date" id="modal-cartao-data-entrega" class="campo-input campo-data-hora">
+                    </div>
+
+                    <!-- Prioridade do Cartão -->
+                    <div class="coluna-50 grupo-campo">
+                        <label for="modal-cartao-prioridade" class="rotulo-campo">Prioridade:</label>
+                        <select id="modal-cartao-prioridade" class="campo-input campo-select-prioridade">
+                            <option value="baixa">Baixa</option>
+                            <option value="media">Média</option>
+                            <option value="alta">Alta</option>
+                        </select>
+                    </div>
+
+                </div>
+
+
+                <!-- Descrição do Cartão -->
+                <div class="grupo-campo">
+                    <label for="modal-cartao-descricao" class="rotulo-campo">Descrição:</label>
+                    <textarea id="modal-cartao-descricao" class="campo-textarea" rows="4"
+                        placeholder="Adicione uma descrição detalhada..."></textarea>
+                </div>
+
+                <!-- Seção de Tarefas / Subtarefas -->
+                <div class="secao-tarefas">
+                    <div class="cabecalho-secao-tarefas">
+                        <label class="rotulo-campo">Tarefas:</label>
+                        <button type="button" id="modal-botao-adicionar-tarefa" class="botao-adicionar-tarefa">+
+                            Adicionar Tarefa</button>
+                    </div>
+                    <div id="modal-lista-tarefas" class="lista-tarefas">
+                        <!-- As linhas com checkbox e input de descrição serão renderizadas dinamicamente aqui -->
+                    </div>
+                </div>
+            </div>
+
+            <footer class="modal-rodape">
+                <button type="button" id="modal-botao-excluir" class="botao-excluir-modal"><i
+                        class="icon icon-trash-02"></i>Excluir</button>
+                <button type="button" id="modal-botao-concluir" class="botao-concluir-modal"><i
+                        class="icon icon-check"></i>Concluir</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Inclusão de bibliotecas locais -->
+    <script src="js/bibliotecas/dexie.js"></script>
+
+    <!-- Inclusão dos módulos JavaScript -->
+    <script src="js/Modelo.js"></script>
+    <script src="js/Armazenamento.js"></script>
+    <script src="js/Interface.js"></script>
+    <script src="js/Inicializacao.js"></script>
+    <script type="text/JavaScript">
+
+        function svgToUri(svg) {
+            let clean = svg
+                // 1. Troca 'currentColor' por 'black' (sem mexer em 'none')
+                .replace(/currentColor/gi, 'black')
+                // 2. Padroniza aspas duplas para aspas simples
+                .replace(/"/g, "'")
+                // 3. Remove quebras de linha e espaços desnecessários
+                .replace(/[\r\n\t]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            // 4. Garante o xmlns (obrigatório para Data URI funcionar)
+            if (!clean.includes("xmlns='")) {
+                clean = clean.replace('<svg', "<svg xmlns='http://www.w3.org/2000/svg'");
+            }
+
+            // Retorna já formatado para o CSS
+            copy(`url("data:image/svg+xml,${encodeURIComponent(clean)}")`);
+            console.log("Ícone copiado para o clipboard");
+        }
+
+    </script>
 </body>
 
 </html>
