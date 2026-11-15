@@ -163,8 +163,8 @@ main {
 .coluna {
     background-color: #fff;
     width: 90vw;
-    max-width: 350px;
-    min-width: 260px;
+    max-width: 22rem;
+    min-width: 20rem;
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -756,6 +756,7 @@ main {
 }
 
 .modal-info-coluna .select-coluna-inline {
+    height: 2rem;
     font-family: inherit;
     font-size: 0.85rem;
     font-weight: 500;
@@ -859,7 +860,8 @@ main {
 
 .campo-data-hora {
     padding: 0;
-    text-align: center;
+    text-align: left;
+    padding-left: .75rem;
 }
 
 .campo-data-hora[type="date"] {
@@ -1032,7 +1034,8 @@ main {
 }
 
 
-@media screen and (max-width: 767px) {
+@media (max-width: 590px) and (pointer: coarse),
+(max-width: 480px) {
     .coluna {
         flex: none;
         max-width: none;
