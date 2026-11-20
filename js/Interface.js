@@ -49,6 +49,24 @@ class GerenciadorDeInterface {
         // Estado do cartão atualmente aberto no popup
         this.cartaoAbertoAtual = null;
         this.colunaAbertaAtual = null;
+
+        // Instância do SortableJS para reordenação vertical das tarefas no modal
+        this.instanciaSortableTarefas = null;
+
+        // Callback opcional acionado após alterações estruturais no quadro (ex: inicializar SortableJS)
+        this.aoAtualizarQuadro = null;
+    }
+
+    /**
+     * Registra uma função de retorno para ser executada sempre que o quadro
+     * for renderizado ou receber novas colunas definitivas.
+     *
+     * @param {Function} callback - Função a ser invocada após a atualização do DOM.
+     */
+    definirCallbackPosRenderizacao(callback) {
+        if (typeof callback === "function") {
+            this.aoAtualizarQuadro = callback;
+        }
     }
 
     /**
@@ -395,6 +413,9 @@ class GerenciadorDeInterface {
                     await this.removerItemTarefa(idItem, linha);
                 }
             });
+
+            // Configura o arrastar e ordenar vertical das tarefas via SortableJS
+            this.inicializarArrastoDeTarefas();
         }
     }
 
@@ -466,6 +487,11 @@ class GerenciadorDeInterface {
 
             // Insere todas as colunas de uma única vez no DOM (apenas 1 reflow/repaint)
             this.containerQuadro.appendChild(fragmentoQuadro);
+
+            // Notifica camadas acopladas (como o GerenciadorDeArrasto) sobre os novos elementos no DOM
+            if (typeof this.aoAtualizarQuadro === "function") {
+                this.aoAtualizarQuadro();
+            }
         } catch (erro) {
             console.error("Erro ao renderizar o quadro Kanban:", erro);
         }
@@ -1111,15 +1137,97 @@ class GerenciadorDeInterface {
     }
 
     /**
+     * Inicializa o SortableJS na lista de tarefas do modal (#modal-lista-tarefas),
+     * permitindo arrastar e reordenar apenas na vertical através do ícone de arrasto.
+     */
+    inicializarArrastoDeTarefas() {
+        if (!this.modalListaTarefas || typeof Sortable === "undefined") {
+            return;
+        }
+
+        if (this.instanciaSortableTarefas && typeof this.instanciaSortableTarefas.destroy === "function") {
+            this.instanciaSortableTarefas.destroy();
+            this.instanciaSortableTarefas = null;
+        }
+
+        this.instanciaSortableTarefas = new Sortable(this.modalListaTarefas, {
+            animation: 150,
+            direction: "vertical",
+            draggable: ".linha-tarefa",
+            handle: ".botao-arrastar-tarefa",
+            filter: "input, button",
+            preventOnFilter: false,
+            touchStartThreshold: 5,
+            fallbackTolerance: 3,
+            ghostClass: "tarefa-fantasma",
+            chosenClass: "tarefa-selecionada",
+            dragClass: "tarefa-arrastando",
+            onStart: () => {
+                document.body.classList.add("arrastando-elemento");
+            },
+            onEnd: async (evento) => {
+                document.body.classList.remove("arrastando-elemento");
+                await this.aoSoltarTarefa(evento);
+            }
+        });
+    }
+
+    /**
+     * Persiste a nova ordem sequencial (0, 1, 2...) das subtarefas no IndexedDB
+     * após a conclusão do arrasto no modal.
+     *
+     * @param {Object} evento - Objeto de evento disparado pelo SortableJS.
+     * @returns {Promise<void>}
+     */
+    async aoSoltarTarefa(evento) {
+        if (!evento || evento.oldIndex === evento.newIndex) {
+            return;
+        }
+
+        if (!this.modalListaTarefas || !this.cartaoAbertoAtual || this.cartaoAbertoAtual._isNovo) {
+            return;
+        }
+
+        try {
+            const linhasTarefas = Array.from(this.modalListaTarefas.querySelectorAll(".linha-tarefa"));
+            const alteracoesEmLote = [];
+
+            linhasTarefas.forEach((linha, indice) => {
+                const idItem = linha.dataset.idItem;
+                if (idItem) {
+                    alteracoesEmLote.push({
+                        id: idItem,
+                        alteracoes: { ordem: indice }
+                    });
+                }
+            });
+
+            if (alteracoesEmLote.length > 0) {
+                await this.bancoDeDados.atualizarItensCartaoEmLote(alteracoesEmLote);
+            }
+        } catch (erro) {
+            console.error("Erro ao salvar nova ordem das tarefas no IndexedDB:", erro);
+        }
+    }
+
+    /**
      * Cria e retorna o elemento DOM correspondente a uma linha de tarefa no modal.
      *
      * @param {ItemCartao} item - Dados do item/subtarefa.
-     * @returns {HTMLElement} Linha da tarefa contendo checkbox, input e botão excluir.
+     * @returns {HTMLElement} Linha da tarefa contendo botão arrastar, checkbox, input e botão excluir.
      */
     criarElementoLinhaTarefa(item) {
         const linha = document.createElement("div");
         linha.className = "linha-tarefa";
         linha.dataset.idItem = item.id;
+
+        // Botão para arrastar e reordenar
+        const iconeArrastarTarefa = document.createElement("div");
+        iconeArrastarTarefa.className = "botao-arrastar-tarefa";
+        iconeArrastarTarefa.title = "Reordernar tarefa";
+        iconeArrastarTarefa.setAttribute("aria-label", "Reordenar esta tarefa");
+        iconeArrastarTarefa.innerHTML = '<i class="icon icon-equal"></i>';
+        linha.appendChild(iconeArrastarTarefa);
 
         // Checkbox de conclusão
         const checkbox = document.createElement("input");
@@ -1446,6 +1554,11 @@ class GerenciadorDeInterface {
                 // Cria o elemento da coluna definitiva e substitui o placeholder diretamente, evitando repaint
                 const elementoColunaDefinitiva = this.criarElementoColuna(novaColuna, []);
                 elementoColuna.replaceWith(elementoColunaDefinitiva);
+
+                // Reconecta o arrastar e soltar para incluir a nova coluna e sua lista de cartões
+                if (typeof this.aoAtualizarQuadro === "function") {
+                    this.aoAtualizarQuadro();
+                }
             } catch (erro) {
                 console.error("Erro ao salvar nova coluna:", erro);
                 processado = false;

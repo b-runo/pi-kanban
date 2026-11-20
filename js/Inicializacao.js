@@ -58,10 +58,21 @@ async function inicializarAplicacao() {
         return;
     }
 
-    // 3. Inicializa o Gerenciador de Interface (Fase 3: DOM e CRUD)
+    // 3. Cria o Gerenciador de Interface (Fase 3: DOM e CRUD) e o Gerenciador de Arrasto (Fase 4)
     if (typeof GerenciadorDeInterface !== "undefined") {
         window.gerenciadorDeInterface = new GerenciadorDeInterface(window.bancoDeDadosLocal);
-        window.gerenciadorDeInterface.inicializar();
+
+        if (typeof GerenciadorDeArrasto !== "undefined") {
+            window.gerenciadorDeArrasto = new GerenciadorDeArrasto(window.bancoDeDadosLocal);
+            window.gerenciadorDeInterface.definirCallbackPosRenderizacao(() => {
+                window.gerenciadorDeArrasto.inicializar();
+            });
+            console.log("🧲 Gerenciador de Arrasto configurado com sucesso.");
+        } else {
+            console.warn("⚠️ Classe GerenciadorDeArrasto não encontrada. O arrastar e soltar estará desativado.");
+        }
+
+        await window.gerenciadorDeInterface.inicializar();
         console.log("🖥️ Gerenciador de Interface inicializado com sucesso.");
     } else {
         console.error("❌ Classe GerenciadorDeInterface não encontrada. Verifique os scripts carregados.");

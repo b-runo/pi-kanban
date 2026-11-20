@@ -565,6 +565,42 @@ class BancoDeDadosLocal {
     }
 
     /**
+     * Atualiza propriedades específicas de múltiplos itens/subtarefas em uma única transação atômica.
+     * Otimizado para reordenação de tarefas via arrastar e soltar (SortableJS).
+     *
+     * @param {Array<{id: string, alteracoes: Object}>} listaAlteracoes - Lista com id do item e propriedades a modificar.
+     * @returns {Promise<void>}
+     */
+    async atualizarItensCartaoEmLote(listaAlteracoes) {
+        try {
+            if (!Array.isArray(listaAlteracoes) || listaAlteracoes.length === 0) {
+                return;
+            }
+
+            await this.banco.transaction("rw", this.banco.itens_cartao, async () => {
+                const promessas = listaAlteracoes.map((item) => {
+                    const dadosTratados = { ...item.alteracoes };
+                    if (dadosTratados.ordem !== undefined) {
+                        dadosTratados.ordem = Number(dadosTratados.ordem) || 0;
+                    }
+                    if (dadosTratados.concluido !== undefined) {
+                        dadosTratados.concluido = Boolean(dadosTratados.concluido);
+                    }
+                    if (dadosTratados.descricao !== undefined) {
+                        dadosTratados.descricao = String(dadosTratados.descricao || "");
+                    }
+                    return this.banco.itens_cartao.update(item.id, dadosTratados);
+                });
+
+                await Promise.all(promessas);
+            });
+        } catch (erro) {
+            console.error("Erro ao atualizar lote de itens do cartão no IndexedDB:", erro);
+            throw erro;
+        }
+    }
+
+    /**
      * Carrega todos os itens/subtarefas vinculados a um cartão específico, ordenados por 'ordem'.
      *
      * @param {string} idCartao - Identificador do cartão.
