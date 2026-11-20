@@ -46,6 +46,19 @@ class GerenciadorDeInterface {
         this.modalBotaoConcluir = document.getElementById("modal-botao-concluir");
         this.modalSecaoTarefas = document.querySelector(".secao-tarefas");
 
+        // Elementos do banner discreto de atualização do PWA (Fase 5)
+        this.avisoAtualizacao = document.getElementById("aviso-atualizacao");
+        this.botaoAtualizarApp = document.getElementById("botao-atualizar-app");
+        this.botaoDispensarAtualizacao = document.getElementById("botao-dispensar-atualizacao");
+
+        // Elementos do botão flutuante (FAB) e avisos de instalação do PWA (Fase 5)
+        this.containerInstalarPwa = document.getElementById("container-instalar-pwa");
+        this.avisoInstalarPwa = document.getElementById("aviso-instalar-pwa");
+        this.avisoInstalacaoIos = document.getElementById("aviso-instalacao-ios");
+        this.botaoInstalarPwa = document.getElementById("botao-instalar-pwa");
+        this.botaoFecharAvisoPwa = document.getElementById("botao-fechar-aviso-pwa");
+        this.botaoFecharAvisoIos = document.getElementById("botao-fechar-aviso-ios");
+
         // Estado do cartão atualmente aberto no popup
         this.cartaoAbertoAtual = null;
         this.colunaAbertaAtual = null;
@@ -1941,6 +1954,94 @@ class GerenciadorDeInterface {
 
         elemento.addEventListener("keydown", manipularKeydown);
         elemento.addEventListener("blur", finalizarEdicao, { once: true });
+    }
+
+    /**
+     * Exibe o banner discreto informando que uma nova versão do PWA está pronta
+     * e conecta os botões de confirmação e dispensa do aviso.
+     *
+     * @param {Function} aoConfirmar - Callback executado quando o usuário clica em "Atualizar".
+     */
+    exibirAvisoAtualizacao(aoConfirmar) {
+        if (!this.avisoAtualizacao || !this.botaoAtualizarApp) {
+            return;
+        }
+
+        // Restaura estado padrão do botão caso o banner seja reexibido
+        this.botaoAtualizarApp.disabled = false;
+        this.botaoAtualizarApp.textContent = "Atualizar";
+
+        this.botaoAtualizarApp.onclick = () => {
+            this.botaoAtualizarApp.disabled = true;
+            this.botaoAtualizarApp.textContent = "Atualizando...";
+            if (typeof aoConfirmar === "function") {
+                aoConfirmar();
+            }
+        };
+
+        if (this.botaoDispensarAtualizacao) {
+            this.botaoDispensarAtualizacao.onclick = () => {
+                this.avisoAtualizacao.classList.add("oculto");
+            };
+        }
+
+        this.avisoAtualizacao.classList.remove("oculto");
+    }
+
+    /**
+     * Exibe o botão flutuante (FAB) de instalação do PWA junto com a mensagem
+     * de aviso sobre a proteção dos dados locais no IndexedDB.
+     *
+     * @param {Function} aoClicar - Callback acionado quando o usuário clica no FAB.
+     */
+    exibirBotaoInstalacao(aoClicar) {
+        if (!this.containerInstalarPwa || !this.botaoInstalarPwa) {
+            return;
+        }
+
+        this.botaoInstalarPwa.onclick = () => {
+            if (typeof aoClicar === "function") {
+                aoClicar();
+            }
+        };
+
+        if (this.botaoFecharAvisoPwa && this.avisoInstalarPwa) {
+            this.botaoFecharAvisoPwa.onclick = () => {
+                this.avisoInstalarPwa.classList.add("oculto");
+            };
+        }
+
+        this.containerInstalarPwa.classList.remove("oculto");
+    }
+
+    /**
+     * Oculta o botão flutuante (FAB) e quaisquer avisos de instalação do PWA.
+     */
+    ocultarBotaoInstalacao() {
+        if (this.containerInstalarPwa) {
+            this.containerInstalarPwa.classList.add("oculto");
+        }
+        if (this.avisoInstalacaoIos) {
+            this.avisoInstalacaoIos.classList.add("oculto");
+        }
+    }
+
+    /**
+     * Exibe a caixa com instruções manuais para instalar o PWA no Safari (iOS/iPadOS),
+     * já que o iOS não suporta o prompt automático de instalação.
+     */
+    exibirInstrucaoInstalacaoIos() {
+        if (!this.avisoInstalacaoIos) {
+            return;
+        }
+
+        if (this.botaoFecharAvisoIos) {
+            this.botaoFecharAvisoIos.onclick = () => {
+                this.avisoInstalacaoIos.classList.add("oculto");
+            };
+        }
+
+        this.avisoInstalacaoIos.classList.remove("oculto");
     }
 }
 

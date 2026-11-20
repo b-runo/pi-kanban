@@ -1142,3 +1142,122 @@ body.arrastando-elemento {
         flex: 1;
     }
 }
+
+/* ==========================================================================
+   Banner Discreto de Atualização do PWA (Fase 5)
+   ========================================================================== */
+
+.aviso-atualizacao {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background-color: #1b1f23;
+    color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    font-size: 0.9rem;
+    max-width: calc(100vw - 2rem);
+}
+
+.aviso-atualizacao-acoes {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.botao-atualizar-app {
+    background-color: #1a796b;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.botao-atualizar-app:hover {
+    background-color: #145f54;
+}
+
+.botao-dispensar-atualizacao {
+    background: transparent;
+    color: #cfd8dc;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.botao-dispensar-atualizacao:hover {
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Botão Flutuante (FAB) e Aviso de Instalação PWA (Fase 5 - Minimalista)
+   ========================================================================== */
+
+.container-instalar-pwa {
+    position: fixed;
+    left: 1rem;
+    bottom: 1rem;
+    z-index: 1900;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    max-width: min(20rem, calc(100vw - 2rem));
+}
+
+.aviso-instalar-pwa,
+.aviso-instalacao-ios {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    background-color: #ffffff;
+    color: #1b1f23;
+    border: 1px solid #d5e0df;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.botao-fechar-aviso-pwa {
+    background: transparent;
+    border: none;
+    color: #607d8b;
+    padding: 0.1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.botao-fechar-aviso-pwa:hover {
+    color: #1b1f23;
+}
+
+.fab-instalar-pwa {
+    background-color: #1a796b;
+    color: #ffffff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.7rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.fab-instalar-pwa:hover {
+    background-color: #145f54;
+}

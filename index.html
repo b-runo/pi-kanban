@@ -4,7 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a796b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="K-Off">
     <title>K-Off - Seu Kanban Offline</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./img/k-off-logo.svg">
+    <link rel="apple-touch-icon" href="./img/icone-192.png">
     <link rel="stylesheet" href="css/estilo.css">
     <link rel="stylesheet" href="css/icones.css">
 </head>
@@ -103,6 +111,40 @@
                         class="icon icon-check"></i>Concluir</button>
             </footer>
         </div>
+    </div>
+
+    <!-- Banner discreto exibido quando houver nova versão do PWA pronta para ativação -->
+    <div id="aviso-atualizacao" class="aviso-atualizacao oculto" role="status" aria-live="polite">
+        <span class="aviso-atualizacao-texto">Nova versão disponível.</span>
+        <div class="aviso-atualizacao-acoes">
+            <button type="button" id="botao-atualizar-app" class="botao-atualizar-app">Atualizar</button>
+            <button type="button" id="botao-dispensar-atualizacao" class="botao-dispensar-atualizacao"
+                aria-label="Fechar aviso de atualização">
+                <i class="icon icon-x-close"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Botão flutuante (FAB) simples e aviso para instalação do PWA (Fase 5) -->
+    <div id="container-instalar-pwa" class="container-instalar-pwa oculto" role="region"
+        aria-label="Instalação do aplicativo">
+        <div id="aviso-instalar-pwa" class="aviso-instalar-pwa">
+            <span class="aviso-instalar-pwa-texto">Instale o K-Off para evitar que o navegador apague seus dados
+                locais.</span>
+            <button type="button" id="botao-fechar-aviso-pwa" class="botao-fechar-aviso-pwa"
+                aria-label="Fechar aviso de instalação">
+                <i class="icon icon-x-close"></i>
+            </button>
+        </div>
+        <div id="aviso-instalacao-ios" class="aviso-instalacao-ios oculto">
+            <span>No Safari, toque em <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de
+                    Início</strong>.</span>
+            <button type="button" id="botao-fechar-aviso-ios" class="botao-fechar-aviso-pwa"
+                aria-label="Fechar instrução para iOS">
+                <i class="icon icon-x-close"></i>
+            </button>
+        </div>
+        <button type="button" id="botao-instalar-pwa" class="fab-instalar-pwa">Instalar App</button>
     </div>
 
     <!-- Inclusão de bibliotecas locais -->
