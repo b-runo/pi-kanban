@@ -312,6 +312,45 @@ function configurarInstalacaoPwa(gerenciadorDeInterface) {
 }
 
 /**
+ * Configura o consumidor da File Handling API (window.launchQueue) para permitir
+ * que o PWA instalado abra automaticamente arquivos .pkb ao serem clicados no
+ * gerenciador de arquivos do sistema operacional.
+ *
+ * @param {GerenciadorDeBackup} gerenciadorDeBackup - Instância responsável pela restauração.
+ */
+function configurarAberturaAutomaticaPkb(gerenciadorDeBackup) {
+    if (!gerenciadorDeBackup) {
+        return;
+    }
+
+    if ("launchQueue" in window && window.launchQueue && typeof window.launchQueue.setConsumer === "function") {
+        window.launchQueue.setConsumer(async (parametrosLancamento) => {
+            if (!parametrosLancamento || !Array.isArray(parametrosLancamento.files) || parametrosLancamento.files.length === 0) {
+                return;
+            }
+
+            try {
+                const manipuladorArquivo = parametrosLancamento.files[0];
+                const resultado = await gerenciadorDeBackup.importarDeManipuladorDeArquivo(manipuladorArquivo);
+
+                if (resultado && resultado.restaurado && resultado.resumo) {
+                    alert(
+                        `Backup restaurado com sucesso!\n` +
+                        `${resultado.resumo.colunas} coluna(s), ${resultado.resumo.cartoes} cartão(ões) e ${resultado.resumo.itens} tarefa(s).`
+                    );
+                }
+            } catch (erro) {
+                console.error("❌ Erro ao abrir arquivo .pkb via launchQueue:", erro);
+                alert(erro.message || "Não foi possível importar o arquivo .pkb aberto.");
+            }
+        });
+        console.log("📂 File Handling API (launchQueue) configurada para arquivos .pkb.");
+    } else {
+        console.info("ℹ️ File Handling API (launchQueue) não suportada neste navegador; use o botão Importar no menu de Configurações.");
+    }
+}
+
+/**
  * Função principal de inicialização da aplicação.
  */
 async function inicializarAplicacao() {
@@ -343,8 +382,25 @@ async function inicializarAplicacao() {
             console.warn("⚠️ Classe GerenciadorDeArrasto não encontrada. O arrastar e soltar estará desativado.");
         }
 
+        // 3.1. Configura o Gerenciador de Backup (.pkb) (Fase 6)
+        if (typeof GerenciadorDeBackup !== "undefined") {
+            window.gerenciadorDeBackup = new GerenciadorDeBackup(
+                window.bancoDeDadosLocal,
+                window.gerenciadorDeInterface
+            );
+            window.gerenciadorDeInterface.definirGerenciadorDeBackup(window.gerenciadorDeBackup);
+            console.log("💾 Gerenciador de Backup configurado com sucesso.");
+        } else {
+            console.warn("⚠️ Classe GerenciadorDeBackup não encontrada. As opções de backup estarão indisponíveis.");
+        }
+
         await window.gerenciadorDeInterface.inicializar();
         console.log("🖥️ Gerenciador de Interface inicializado com sucesso.");
+
+        // 3.2. Configura abertura automática de arquivos .pkb via File Handling API
+        if (window.gerenciadorDeBackup) {
+            configurarAberturaAutomaticaPkb(window.gerenciadorDeBackup);
+        }
 
         // 4. Configura o botão FAB e avisos de instalação do PWA assim que a interface estiver pronta
         configurarInstalacaoPwa(window.gerenciadorDeInterface);

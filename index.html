@@ -13,7 +13,7 @@
     <title>K-Off - Seu Kanban Offline</title>
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/svg+xml" href="./img/k-off-logo.svg">
-    <link rel="apple-touch-icon" href="./img/icone-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./img/apple-touch-icon.png">
     <script>
         (function () {
             try {
@@ -49,8 +49,9 @@
                     <i class="icon icon-moon-02" aria-hidden="true"></i>
                     <i class="icon icon-sun" aria-hidden="true"></i>
                 </button>
-                <button class="item-menu configuracoes" title="Configurações">
-                    <i class="icon icon-settings-02"></i>
+                <button type="button" class="item-menu configuracoes" title="Configurações"
+                    aria-label="Configurações e backup">
+                    <i class="icon icon-settings-02" aria-hidden="true"></i>
                 </button>
                 <button class="item-menu atualizar oculto" id="botao-atualizar-app" title="Atualizar">
                     <i class="icon icon-refresh-cw-04"></i>
@@ -144,6 +145,44 @@
         </div>
     </div>
 
+    <!-- Modal Popup de Configurações e Backup (.pkb) (Fase 6) -->
+    <div id="modal-configuracoes" class="modal-overlay oculto" role="dialog" aria-modal="true"
+        aria-labelledby="modal-configuracoes-titulo">
+        <div class="modal-conteudo modal-conteudo-configuracoes">
+            <header class="modal-cabecalho">
+                <h2 id="modal-configuracoes-titulo" class="modal-titulo-configuracoes">Backup do Quadro (.pkb)</h2>
+                <button type="button" id="modal-configuracoes-botao-fechar" class="botao-fechar-modal"
+                    aria-label="Fechar configurações">
+                    <i class="icon icon-x-close" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <div class="modal-corpo">
+                <p class="descricao-backup">
+                    Exporte todas as colunas, cartões, tarefas e configurações em um arquivo <strong>.pkb</strong> ou
+                    importe um backup existente para substituir o quadro atual.
+                </p>
+
+                <div class="grupo-acoes-backup">
+                    <button type="button" id="botao-exportar-backup" class="botao-backup-acao botao-backup-exportar">
+                        <i class="icon icon-share-07" aria-hidden="true"></i>
+                        <span>Exportar</span>
+                    </button>
+
+                    <button type="button" id="botao-importar-backup" class="botao-backup-acao botao-backup-importar">
+                        <i class="icon icon-file-download-02" aria-hidden="true"></i>
+                        <span>Importar</span>
+                    </button>
+
+                    <!-- Input de arquivo oculto sem atributo accept para evitar bloqueio por UTI no iOS Safari -->
+                    <input type="file" id="input-importar-backup" class="oculto">
+                </div>
+
+                <p id="status-backup" class="mensagem-status-backup oculto" role="status" aria-live="polite"></p>
+            </div>
+        </div>
+    </div>
+
     <!-- Botão flutuante (FAB) simples e aviso para instalação do PWA (Fase 5) -->
     <div id="container-instalar-pwa" class="container-instalar-pwa oculto" role="region"
         aria-label="Instalação do aplicativo">
@@ -178,6 +217,7 @@
     <script src="js/Armazenamento.js"></script>
     <script src="js/Interface.js"></script>
     <script src="js/ArrastarESoltar.js"></script>
+    <script src="js/Backup.js"></script>
     <script src="js/Inicializacao.js"></script>
     <script type="text/JavaScript">
 
