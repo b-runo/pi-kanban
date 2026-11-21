@@ -225,9 +225,13 @@ class GerenciadorDeBackup {
 
         const resumoValidacao = this.validarEstruturaBackup(dadosParseados);
 
+        const textoColunas = resumoValidacao.colunas === 1 ? "coluna" : "colunas";
+        const textoCartoes = resumoValidacao.cartoes === 1 ? "cartão" : "cartões";
+        const textoTarefas = resumoValidacao.itens === 1 ? "tarefa" : "tarefas";
+
         const mensagemConfirmacao =
             `Deseja restaurar o backup "${nomeArquivo}"?\n\n` +
-            `Conteúdo encontrado: ${resumoValidacao.colunas} coluna(s), ${resumoValidacao.cartoes} cartão(ões) e ${resumoValidacao.itens} tarefa(s).\n\n` +
+            `Conteúdo encontrado: ${resumoValidacao.colunas} ${textoColunas}, ${resumoValidacao.cartoes} ${textoCartoes} e ${resumoValidacao.itens} ${textoTarefas}.\n\n` +
             `ATENÇÃO: Todo o quadro atual será substituído pelos dados deste backup.`;
 
         const confirmou = confirm(mensagemConfirmacao);
