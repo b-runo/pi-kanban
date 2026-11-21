@@ -730,6 +730,184 @@ class BancoDeDadosLocal {
     async salvarConfiguracoes(alteracoes) {
         return await this.atualizarConfiguracoes(alteracoes);
     }
+
+    /**
+     * Exporta todos os dados das quatro tabelas do IndexedDB (colunas, cartões,
+     * subtarefas e configurações) para geração de backup completo (.pkb).
+     *
+     * @returns {Promise<Object>} Objeto estruturado contendo metadados e todas as tabelas.
+     */
+    async exportarTodosOsDados() {
+        try {
+            const [colunas, cartoes, itensCartao, configuracoes] = await Promise.all([
+                this.banco.colunas.toArray(),
+                this.banco.cartoes.toArray(),
+                this.banco.itens_cartao.toArray(),
+                this.carregarConfiguracoes()
+            ]);
+
+            const colunasLimpos = (colunas || [])
+                .map((coluna) => ({
+                    id: String(coluna.id),
+                    titulo: String(coluna.titulo || "").toUpperCase(),
+                    ordem: Number(coluna.ordem) || 0,
+                    cor_destaque: coluna.cor_destaque || "#9E9E9E"
+                }))
+                .sort((a, b) => a.ordem - b.ordem);
+
+            const cartoesLimpos = (cartoes || [])
+                .map((cartao) => ({
+                    id: String(cartao.id),
+                    titulo: String(cartao.titulo || ""),
+                    descricao: String(cartao.descricao || ""),
+                    dataEntrega: String(cartao.dataEntrega || ""),
+                    prioridade: BancoDeDadosLocal.normalizarPrioridade(cartao.prioridade),
+                    colunaAtual: String(cartao.colunaAtual || ""),
+                    ordem: Number(cartao.ordem) || 0
+                }))
+                .sort((a, b) => a.ordem - b.ordem);
+
+            const itensLimpos = (itensCartao || [])
+                .map((item) => ({
+                    id: String(item.id),
+                    idCartao: String(item.idCartao || ""),
+                    descricao: String(item.descricao || ""),
+                    concluido: Boolean(item.concluido),
+                    ordem: Number(item.ordem) || 0
+                }))
+                .sort((a, b) => a.ordem - b.ordem);
+
+            const configLimpa = {
+                id: "geral",
+                tituloDoProjeto: (configuracoes && configuracoes.tituloDoProjeto)
+                    ? String(configuracoes.tituloDoProjeto).trim() || "Meu Projeto"
+                    : "Meu Projeto",
+                tema: (configuracoes && configuracoes.tema === "dark") ? "dark" : "light"
+            };
+
+            return {
+                aplicativo: "K-Off",
+                versaoEsquema: 6,
+                dataExportacao: new Date().toISOString(),
+                dados: {
+                    colunas: colunasLimpos,
+                    cartoes: cartoesLimpos,
+                    itens_cartao: itensLimpos,
+                    configuracoes: configLimpa
+                }
+            };
+        } catch (erro) {
+            console.error("Erro ao exportar todos os dados do IndexedDB:", erro);
+            throw erro;
+        }
+    }
+
+    /**
+     * Substitui integralmente todas as tabelas do banco local pelos dados de um backup
+     * dentro de uma única transação atômica (tudo ou nada).
+     *
+     * @param {Object} dadosBackup - Objeto de backup já parseado (estrutura padrão ou direta).
+     * @returns {Promise<{colunas: number, cartoes: number, itens: number}>} Contagem dos registros restaurados.
+     */
+    async restaurarBackupCompleto(dadosBackup) {
+        try {
+            if (!dadosBackup || typeof dadosBackup !== "object") {
+                throw new Error("Os dados do backup estão vazios ou em formato inválido.");
+            }
+
+            // Suporta tanto o envelope completo { dados: { ... } } quanto o objeto direto { colunas, cartoes, ... }
+            const origem = (dadosBackup.dados && typeof dadosBackup.dados === "object")
+                ? dadosBackup.dados
+                : dadosBackup;
+
+            if (!Array.isArray(origem.colunas) || !Array.isArray(origem.cartoes)) {
+                throw new Error("O arquivo de backup não possui as listas obrigatórias de colunas e cartões.");
+            }
+
+            const listaItensOrigem = Array.isArray(origem.itens_cartao) ? origem.itens_cartao : [];
+
+            const colunasSanitizadas = origem.colunas
+                .filter((coluna) => coluna && coluna.id)
+                .map((coluna, indice) => ({
+                    id: String(coluna.id),
+                    titulo: String(coluna.titulo || "COLUNA").toUpperCase(),
+                    ordem: coluna.ordem !== undefined ? (Number(coluna.ordem) || 0) : indice,
+                    cor_destaque: typeof coluna.cor_destaque === "string" && coluna.cor_destaque.trim()
+                        ? coluna.cor_destaque.trim()
+                        : "#9E9E9E"
+                }));
+
+            const cartoesSanitizados = origem.cartoes
+                .filter((cartao) => cartao && cartao.id && cartao.colunaAtual)
+                .map((cartao, indice) => ({
+                    id: String(cartao.id),
+                    titulo: String(cartao.titulo || "Cartão sem título"),
+                    descricao: String(cartao.descricao || ""),
+                    dataEntrega: String(cartao.dataEntrega || ""),
+                    prioridade: BancoDeDadosLocal.normalizarPrioridade(cartao.prioridade),
+                    colunaAtual: String(cartao.colunaAtual),
+                    ordem: cartao.ordem !== undefined ? (Number(cartao.ordem) || 0) : indice
+                }));
+
+            const itensSanitizados = listaItensOrigem
+                .filter((item) => item && item.id && item.idCartao)
+                .map((item, indice) => ({
+                    id: String(item.id),
+                    idCartao: String(item.idCartao),
+                    descricao: String(item.descricao || ""),
+                    concluido: Boolean(item.concluido),
+                    ordem: item.ordem !== undefined ? (Number(item.ordem) || 0) : indice
+                }));
+
+            let configOrigem = origem.configuracoes;
+            if (Array.isArray(configOrigem)) {
+                configOrigem = configOrigem.find((c) => c && c.id === "geral") || configOrigem[0];
+            }
+
+            const configSanitizada = {
+                id: "geral",
+                tituloDoProjeto: (configOrigem && typeof configOrigem.tituloDoProjeto === "string" && configOrigem.tituloDoProjeto.trim())
+                    ? configOrigem.tituloDoProjeto.trim()
+                    : "Meu Projeto",
+                tema: (configOrigem && configOrigem.tema === "dark") ? "dark" : "light"
+            };
+
+            // Transação atômica nas 4 tabelas: se algo falhar, o estado anterior é preservado
+            await this.banco.transaction(
+                "rw",
+                this.banco.colunas,
+                this.banco.cartoes,
+                this.banco.itens_cartao,
+                this.banco.configuracoes,
+                async () => {
+                    await this.banco.colunas.clear();
+                    await this.banco.cartoes.clear();
+                    await this.banco.itens_cartao.clear();
+                    await this.banco.configuracoes.clear();
+
+                    if (colunasSanitizadas.length > 0) {
+                        await this.banco.colunas.bulkPut(colunasSanitizadas);
+                    }
+                    if (cartoesSanitizados.length > 0) {
+                        await this.banco.cartoes.bulkPut(cartoesSanitizados);
+                    }
+                    if (itensSanitizados.length > 0) {
+                        await this.banco.itens_cartao.bulkPut(itensSanitizados);
+                    }
+                    await this.banco.configuracoes.put(configSanitizada);
+                }
+            );
+
+            return {
+                colunas: colunasSanitizadas.length,
+                cartoes: cartoesSanitizados.length,
+                itens: itensSanitizados.length
+            };
+        } catch (erro) {
+            console.error("Erro ao restaurar backup completo no IndexedDB:", erro);
+            throw erro;
+        }
+    }
 }
 
 // Expõe a classe globalmente no navegador

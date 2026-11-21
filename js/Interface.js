@@ -32,6 +32,7 @@ class GerenciadorDeInterface {
         this.botaoAdicionarColuna = document.getElementById("botao-adicionar-coluna");
         this.elementoNomeProjeto = document.querySelector(".nome-projeto");
         this.botaoTema = document.querySelector(".item-menu.tema");
+        this.botaoConfiguracoes = document.querySelector(".item-menu.configuracoes");
         this.metaThemeColor = document.querySelector('meta[name="theme-color"]');
         this.metaColorScheme = document.querySelector('meta[name="color-scheme"]');
 
@@ -53,6 +54,14 @@ class GerenciadorDeInterface {
         this.avisoAtualizacao = document.querySelector(".notificacao-nova-versao");
         this.botaoAtualizarApp = document.getElementById("botao-atualizar-app");
 
+        // Elementos do Modal de Configurações e Backup (.pkb) (Fase 6)
+        this.modalConfiguracoes = document.getElementById("modal-configuracoes");
+        this.modalConfiguracoesBotaoFechar = document.getElementById("modal-configuracoes-botao-fechar");
+        this.botaoExportarBackup = document.getElementById("botao-exportar-backup");
+        this.botaoImportarBackup = document.getElementById("botao-importar-backup");
+        this.inputImportarBackup = document.getElementById("input-importar-backup");
+        this.statusBackup = document.getElementById("status-backup");
+
         // Elementos do botão flutuante (FAB) e avisos de instalação do PWA (Fase 5)
         this.containerInstalarPwa = document.getElementById("container-instalar-pwa");
         this.avisoInstalarPwa = document.getElementById("aviso-instalar-pwa");
@@ -70,6 +79,21 @@ class GerenciadorDeInterface {
 
         // Callback opcional acionado após alterações estruturais no quadro (ex: inicializar SortableJS)
         this.aoAtualizarQuadro = null;
+
+        // Controlador opcional de backup/restauração (.pkb) injetado na inicialização
+        this.gerenciadorDeBackup = null;
+    }
+
+    /**
+     * Registra a instância do gerenciador de backup responsável por exportar e
+     * importar arquivos .pkb a partir do modal de configurações.
+     *
+     * @param {GerenciadorDeBackup} gerenciadorDeBackup - Controlador de backup.
+     */
+    definirGerenciadorDeBackup(gerenciadorDeBackup) {
+        if (gerenciadorDeBackup) {
+            this.gerenciadorDeBackup = gerenciadorDeBackup;
+        }
     }
 
     /**
@@ -90,6 +114,7 @@ class GerenciadorDeInterface {
     async inicializar() {
         this.configurarOuvintesDeEventos();
         this.configurarOuvintesModal();
+        this.configurarOuvintesModalConfiguracoes();
         await this.carregarConfiguracoesIniciais();
         await this.renderizarQuadro();
     }
@@ -120,6 +145,13 @@ class GerenciadorDeInterface {
         if (this.botaoTema) {
             this.botaoTema.addEventListener("click", () => {
                 this.alternarTema();
+            });
+        }
+
+        // Botão de configurações / backup (.pkb) no cabeçalho
+        if (this.botaoConfiguracoes) {
+            this.botaoConfiguracoes.addEventListener("click", () => {
+                this.abrirModalConfiguracoes();
             });
         }
 
@@ -2103,6 +2135,144 @@ class GerenciadorDeInterface {
         }
 
         this.avisoInstalacaoIos.classList.remove("oculto");
+    }
+
+    /**
+     * Configura os ouvintes do modal de Configurações e Backup (.pkb).
+     */
+    configurarOuvintesModalConfiguracoes() {
+        if (this.modalConfiguracoesBotaoFechar) {
+            this.modalConfiguracoesBotaoFechar.addEventListener("click", () => {
+                this.fecharModalConfiguracoes();
+            });
+        }
+
+        if (this.modalConfiguracoes) {
+            this.modalConfiguracoes.addEventListener("click", (evento) => {
+                if (evento.target === this.modalConfiguracoes) {
+                    this.fecharModalConfiguracoes();
+                }
+            });
+        }
+
+        document.addEventListener("keydown", (evento) => {
+            if (
+                evento.key === "Escape"
+                && this.modalConfiguracoes
+                && !this.modalConfiguracoes.classList.contains("oculto")
+            ) {
+                this.fecharModalConfiguracoes();
+            }
+        });
+
+        if (this.botaoExportarBackup) {
+            this.botaoExportarBackup.addEventListener("click", async () => {
+                if (!this.gerenciadorDeBackup) {
+                    this.exibirStatusBackup("Gerenciador de backup indisponível no momento.", true);
+                    return;
+                }
+
+                this.ocultarStatusBackup();
+                this.botaoExportarBackup.disabled = true;
+
+                try {
+                    const resultado = await this.gerenciadorDeBackup.exportarECompartilhar();
+                    if (resultado.metodo === "share") {
+                        this.exibirStatusBackup(`Backup "${resultado.nomeArquivo}" compartilhado com sucesso.`);
+                    } else if (resultado.metodo === "download") {
+                        this.exibirStatusBackup(`Download do backup "${resultado.nomeArquivo}" iniciado.`);
+                    }
+                } catch (erro) {
+                    console.error("Erro ao exportar backup:", erro);
+                    this.exibirStatusBackup(erro.message || "Não foi possível exportar o backup.", true);
+                } finally {
+                    this.botaoExportarBackup.disabled = false;
+                }
+            });
+        }
+
+        if (this.botaoImportarBackup && this.inputImportarBackup) {
+            this.botaoImportarBackup.addEventListener("click", () => {
+                // Limpa seleção anterior para permitir reimportar o mesmo arquivo se necessário
+                this.inputImportarBackup.value = "";
+                this.inputImportarBackup.click();
+            });
+
+            this.inputImportarBackup.addEventListener("change", async (evento) => {
+                const arquivos = evento.target && evento.target.files;
+                const arquivo = arquivos && arquivos[0];
+                if (!arquivo) {
+                    return;
+                }
+
+                if (!this.gerenciadorDeBackup) {
+                    this.exibirStatusBackup("Gerenciador de backup indisponível no momento.", true);
+                    return;
+                }
+
+                this.ocultarStatusBackup();
+                this.botaoImportarBackup.disabled = true;
+
+                try {
+                    const resultado = await this.gerenciadorDeBackup.importarDeArquivo(arquivo);
+                    if (resultado && resultado.restaurado && resultado.resumo) {
+                        this.exibirStatusBackup(
+                            `Quadro restaurado: ${resultado.resumo.colunas} coluna(s), ${resultado.resumo.cartoes} cartão(ões) e ${resultado.resumo.itens} tarefa(s).`
+                        );
+                    }
+                } catch (erro) {
+                    console.error("Erro ao importar arquivo de backup:", erro);
+                    this.exibirStatusBackup(erro.message || "Não foi possível importar o arquivo selecionado.", true);
+                } finally {
+                    this.inputImportarBackup.value = "";
+                    this.botaoImportarBackup.disabled = false;
+                }
+            });
+        }
+    }
+
+    /**
+     * Abre o modal de Configurações e Backup (.pkb).
+     */
+    abrirModalConfiguracoes() {
+        if (!this.modalConfiguracoes) return;
+        this.ocultarStatusBackup();
+        this.modalConfiguracoes.classList.remove("oculto");
+        document.body.classList.add("modal-aberto");
+    }
+
+    /**
+     * Fecha o modal de Configurações e Backup (.pkb).
+     */
+    fecharModalConfiguracoes() {
+        if (!this.modalConfiguracoes) return;
+        this.modalConfiguracoes.classList.add("oculto");
+        if (!this.modalCartao || this.modalCartao.classList.contains("oculto")) {
+            document.body.classList.remove("modal-aberto");
+        }
+    }
+
+    /**
+     * Exibe mensagem de feedback dentro do modal de configurações.
+     *
+     * @param {string} mensagem - Texto informativo para o usuário.
+     * @param {boolean} [ehErro=false] - Indica se a mensagem representa um erro.
+     */
+    exibirStatusBackup(mensagem, ehErro = false) {
+        if (!this.statusBackup) return;
+        this.statusBackup.textContent = mensagem;
+        this.statusBackup.classList.toggle("erro", Boolean(ehErro));
+        this.statusBackup.classList.remove("oculto");
+    }
+
+    /**
+     * Oculta a mensagem de feedback dentro do modal de configurações.
+     */
+    ocultarStatusBackup() {
+        if (!this.statusBackup) return;
+        this.statusBackup.textContent = "";
+        this.statusBackup.classList.remove("erro");
+        this.statusBackup.classList.add("oculto");
     }
 }
 

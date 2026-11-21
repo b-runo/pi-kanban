@@ -23,6 +23,12 @@
             "purpose": "any"
         },
         {
+            "src": "./img/icone-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
             "src": "./img/k-off-logo.svg",
             "sizes": "any",
             "type": "image/svg+xml",
