@@ -4,7 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f4f7f7">
+    <meta name="color-scheme" content="light">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="K-Off">
     <title>K-Off - Seu Kanban Offline</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./img/k-off-logo.svg">
+    <link rel="apple-touch-icon" href="./img/icone-192.png">
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem("koff-tema") === "dark") {
+                    document.documentElement.classList.add("tema-escuro");
+                    var metaTheme = document.querySelector('meta[name="theme-color"]');
+                    var metaScheme = document.querySelector('meta[name="color-scheme"]');
+                    if (metaTheme) metaTheme.setAttribute("content", "#121618");
+                    if (metaScheme) metaScheme.setAttribute("content", "dark");
+                }
+            } catch (erro) {
+                // Ignora indisponibilidade de localStorage
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="css/estilo.css">
     <link rel="stylesheet" href="css/icones.css">
 </head>
@@ -20,8 +44,23 @@
                 </div>
             </div>
             <nav class="menu">
-                <i class="icon icon-menu-05"></i>
+                <button type="button" class="item-menu tema" title="Alternar para tema escuro"
+                    aria-label="Alternar para tema escuro" aria-pressed="false">
+                    <i class="icon icon-moon-02" aria-hidden="true"></i>
+                    <i class="icon icon-sun" aria-hidden="true"></i>
+                </button>
+                <button class="item-menu configuracoes" title="Configurações">
+                    <i class="icon icon-settings-02"></i>
+                </button>
+                <button class="item-menu atualizar oculto" id="botao-atualizar-app" title="Atualizar">
+                    <i class="icon icon-refresh-cw-04"></i>
+                </button>
             </nav>
+        </div>
+        <div class="barra-notificacao" id="barra-notificacao">
+            <div class="notificacao-nova-versao oculto" role="status" aria-live="polite">
+                Nova versão disponível, clique para atualizar.
+            </div>
         </div>
         <div class="barra-acoes">
             <div class="nome-projeto" tabindex="0" title="Clique para editar o título do projeto">Meu Projeto</div>
@@ -105,13 +144,40 @@
         </div>
     </div>
 
+    <!-- Botão flutuante (FAB) simples e aviso para instalação do PWA (Fase 5) -->
+    <div id="container-instalar-pwa" class="container-instalar-pwa oculto" role="region"
+        aria-label="Instalação do aplicativo">
+        <div id="aviso-instalar-pwa" class="aviso-instalar-pwa">
+            <span class="aviso-instalar-pwa-texto">Instale o K-Off para evitar que o navegador apague seus dados
+                locais.</span>
+            <button type="button" id="botao-fechar-aviso-pwa" class="botao-fechar-aviso-pwa"
+                aria-label="Fechar aviso de instalação">
+                <i class="icon icon-x-close"></i>
+            </button>
+        </div>
+        <div id="aviso-instalacao-ios" class="aviso-instalacao-ios oculto">
+            <span>No Safari, toque em <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de
+                    Início</strong>.</span>
+            <button type="button" id="botao-fechar-aviso-ios" class="botao-fechar-aviso-pwa"
+                aria-label="Fechar instrução para iOS">
+                <i class="icon icon-x-close"></i>
+            </button>
+        </div>
+        <button type="button" id="botao-instalar-pwa" class="fab-instalar-pwa">
+            <i class="icon icon-arrow-block-down"></i>
+            Instalar App
+        </button>
+    </div>
+
     <!-- Inclusão de bibliotecas locais -->
     <script src="js/bibliotecas/dexie.js"></script>
+    <script src="js/bibliotecas/sortable.min.js"></script>
 
     <!-- Inclusão dos módulos JavaScript -->
     <script src="js/Modelo.js"></script>
     <script src="js/Armazenamento.js"></script>
     <script src="js/Interface.js"></script>
+    <script src="js/ArrastarESoltar.js"></script>
     <script src="js/Inicializacao.js"></script>
     <script type="text/JavaScript">
 

@@ -1,0 +1,45 @@
+{
+    "name": "K-Off - Seu Kanban Offline",
+    "short_name": "K-Off",
+    "description": "Aplicativo web de Kanban 100% offline com persistência local e backup portátil.",
+    "lang": "pt-BR",
+    "start_url": "./",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "any",
+    "theme_color": "#1a796b",
+    "background_color": "#f4f7f7",
+    "icons": [
+        {
+            "src": "./img/icone-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "./img/icone-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "./img/k-off-logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ],
+    "file_handlers": [
+        {
+            "action": "./",
+            "accept": {
+                "application/json": [
+                    ".pkb"
+                ],
+                "text/plain": [
+                    ".pkb"
+                ]
+            }
+        }
+    ]
+}
