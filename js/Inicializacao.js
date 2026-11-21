@@ -49,7 +49,11 @@ async function solicitarArmazenamentoPersistente() {
  */
 async function registrarTrabalhadorDeServico(gerenciadorDeInterface) {
     if (!("serviceWorker" in navigator)) {
-        console.info("ℹ️ Service Worker não é suportado neste navegador.");
+        if (!window.isSecureContext) {
+            console.info("ℹ️ Service Worker indisponível: a página não está em contexto seguro.");
+        } else {
+            console.info("ℹ️ Service Worker não é suportado ou está desabilitado neste navegador");
+        }
         return;
     }
 
@@ -187,9 +191,97 @@ function ehDispositivoIos() {
 }
 
 /**
+ * Estado global de captura antecipada dos eventos de instalação do PWA.
+ * O registro síncrono evita perder o evento `beforeinstallprompt` caso o navegador
+ * o dispare antes da conclusão dos `await` em inicializarAplicacao().
+ */
+const estadoInstalacaoPwa = {
+    eventoPendente: null,
+    aplicativoInstalado: false,
+    gerenciadorDeInterface: null
+};
+
+/**
+ * Executa o prompt nativo de instalação quando o usuário clica no FAB.
+ */
+async function manipularCliqueInstalacaoPwa() {
+    const evento = estadoInstalacaoPwa.eventoPendente;
+    const gerenciadorDeInterface = estadoInstalacaoPwa.gerenciadorDeInterface;
+    if (!evento || !gerenciadorDeInterface) {
+        return;
+    }
+
+    // Um BeforeInstallPromptEvent só pode ser utilizado uma única vez
+    estadoInstalacaoPwa.eventoPendente = null;
+
+    try {
+        await evento.prompt();
+        const escolha = await evento.userChoice;
+        if (escolha && escolha.outcome === "accepted") {
+            estadoInstalacaoPwa.aplicativoInstalado = true;
+        }
+    } catch (erro) {
+        console.warn("⚠️ Não foi possível concluir o prompt de instalação:", erro);
+    } finally {
+        // Oculta o botão após consumir o evento (evita botão inativo se o usuário cancelar);
+        // se o navegador disparar um novo `beforeinstallprompt` depois, ele será exibido novamente.
+        gerenciadorDeInterface.ocultarBotaoInstalacao();
+    }
+}
+
+/**
+ * Sincroniza o estado atual de instalação com a interface (FAB).
+ */
+function atualizarBotaoInstalacaoPwa() {
+    const gerenciadorDeInterface = estadoInstalacaoPwa.gerenciadorDeInterface;
+    if (!gerenciadorDeInterface) {
+        return;
+    }
+
+    if (estaRodandoComoPwa() || estadoInstalacaoPwa.aplicativoInstalado) {
+        gerenciadorDeInterface.ocultarBotaoInstalacao();
+        return;
+    }
+
+    if (estadoInstalacaoPwa.eventoPendente) {
+        gerenciadorDeInterface.exibirBotaoInstalacao(manipularCliqueInstalacaoPwa);
+        return;
+    }
+
+    // Fallback para Safari no iOS/iPadOS, que não dispara beforeinstallprompt
+    if (ehDispositivoIos()) {
+        gerenciadorDeInterface.exibirBotaoInstalacao(() => {
+            gerenciadorDeInterface.exibirInstrucaoInstalacaoIos();
+        });
+    }
+}
+
+// Registra os ouvintes de instalação imediatamente no carregamento do script
+window.addEventListener("beforeinstallprompt", (evento) => {
+    // Impede o mini-infobar automático para usar o nosso botão FAB controlado
+    evento.preventDefault();
+    estadoInstalacaoPwa.eventoPendente = evento;
+    atualizarBotaoInstalacaoPwa();
+});
+
+window.addEventListener("appinstalled", async () => {
+    estadoInstalacaoPwa.eventoPendente = null;
+    estadoInstalacaoPwa.aplicativoInstalado = true;
+
+    if (estadoInstalacaoPwa.gerenciadorDeInterface) {
+        estadoInstalacaoPwa.gerenciadorDeInterface.ocultarBotaoInstalacao();
+    }
+
+    console.log("✅ K-Off instalado como PWA com sucesso!");
+
+    // Após instalado, o navegador tem maior propensão a aceitar persistência permanente
+    await solicitarArmazenamentoPersistente();
+});
+
+/**
  * Configura a detecção de instalação do PWA e controla o FAB de instalação:
  * - Se já estiver instalado (standalone), mantém o botão oculto.
- * - Em Android/Desktop (Chromium), intercepta `beforeinstallprompt` para disparar no clique.
+ * - Em Android/Desktop (Chromium), utiliza o `beforeinstallprompt` capturado (mesmo se disparado antes da UI ficar pronta).
  * - Em iOS Safari (sem suporte a `beforeinstallprompt`), exibe instrução manual no clique.
  * - Ao concluir a instalação (`appinstalled`), oculta o FAB e reforça `storage.persist()`.
  *
@@ -200,50 +292,13 @@ function configurarInstalacaoPwa(gerenciadorDeInterface) {
         return;
     }
 
-    if (estaRodandoComoPwa()) {
-        gerenciadorDeInterface.ocultarBotaoInstalacao();
-        return;
-    }
-
-    let eventoInstalacaoPendente = null;
-
-    window.addEventListener("beforeinstallprompt", (evento) => {
-        // Impede o mini-infobar automático para usar o nosso botão FAB controlado
-        evento.preventDefault();
-        eventoInstalacaoPendente = evento;
-
-        gerenciadorDeInterface.exibirBotaoInstalacao(async () => {
-            if (!eventoInstalacaoPendente) {
-                return;
-            }
-
-            eventoInstalacaoPendente.prompt();
-            try {
-                const escolha = await eventoInstalacaoPendente.userChoice;
-                if (escolha && escolha.outcome === "accepted") {
-                    gerenciadorDeInterface.ocultarBotaoInstalacao();
-                }
-            } catch (erro) {
-                console.warn("⚠️ Não foi possível concluir o prompt de instalação:", erro);
-            } finally {
-                eventoInstalacaoPendente = null;
-            }
-        });
-    });
-
-    window.addEventListener("appinstalled", async () => {
-        eventoInstalacaoPendente = null;
-        gerenciadorDeInterface.ocultarBotaoInstalacao();
-        console.log("✅ K-Off instalado como PWA com sucesso!");
-
-        // Após instalado, o navegador tem maior propensão a aceitar persistência permanente
-        await solicitarArmazenamentoPersistente();
-    });
+    estadoInstalacaoPwa.gerenciadorDeInterface = gerenciadorDeInterface;
 
     if (window.matchMedia) {
         const consultaStandalone = window.matchMedia("(display-mode: standalone)");
         const aoMudarDisplay = (evento) => {
             if (evento.matches) {
+                estadoInstalacaoPwa.aplicativoInstalado = true;
                 gerenciadorDeInterface.ocultarBotaoInstalacao();
             }
         };
@@ -253,12 +308,7 @@ function configurarInstalacaoPwa(gerenciadorDeInterface) {
         }
     }
 
-    // Fallback para Safari no iOS/iPadOS, que não dispara beforeinstallprompt
-    if (ehDispositivoIos()) {
-        gerenciadorDeInterface.exibirBotaoInstalacao(() => {
-            gerenciadorDeInterface.exibirInstrucaoInstalacaoIos();
-        });
-    }
+    atualizarBotaoInstalacaoPwa();
 }
 
 /**
@@ -296,11 +346,11 @@ async function inicializarAplicacao() {
         await window.gerenciadorDeInterface.inicializar();
         console.log("🖥️ Gerenciador de Interface inicializado com sucesso.");
 
-        // 4. Registra o Service Worker (Fase 5: PWA Offline e detecção de atualizações)
-        await registrarTrabalhadorDeServico(window.gerenciadorDeInterface);
-
-        // 5. Configura o botão FAB e avisos de instalação do PWA
+        // 4. Configura o botão FAB e avisos de instalação do PWA assim que a interface estiver pronta
         configurarInstalacaoPwa(window.gerenciadorDeInterface);
+
+        // 5. Registra o Service Worker (Fase 5: PWA Offline e detecção de atualizações)
+        await registrarTrabalhadorDeServico(window.gerenciadorDeInterface);
     } else {
         console.error("❌ Classe GerenciadorDeInterface não encontrada. Verifique os scripts carregados.");
     }

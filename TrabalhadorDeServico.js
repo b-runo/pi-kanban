@@ -13,7 +13,7 @@
  * ==============================================================================
  */
 
-const VERSAO_CACHE = "k-off-v1.0.1b";
+const VERSAO_CACHE = "k-off-v1.0.1o";
 
 /**
  * Lista completa dos recursos estáticos essenciais para o K-Off rodar offline.
@@ -126,9 +126,9 @@ self.addEventListener("fetch", (evento) => {
             }).catch(() => {
                 // Fallback seguro para navegações quando o dispositivo estiver offline
                 if (requisicao.mode === "navigate") {
-                    return caches.match("./index.html");
+                    return caches.match("./index.html").then((resposta) => resposta || Response.error());
                 }
-                return undefined;
+                return Response.error();
             });
         })
     );

@@ -31,6 +31,9 @@ class GerenciadorDeInterface {
         this.containerQuadro = document.getElementById("quadro");
         this.botaoAdicionarColuna = document.getElementById("botao-adicionar-coluna");
         this.elementoNomeProjeto = document.querySelector(".nome-projeto");
+        this.botaoTema = document.querySelector(".item-menu.tema");
+        this.metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        this.metaColorScheme = document.querySelector('meta[name="color-scheme"]');
 
         // Elementos do Modal Popup de Detalhes do Cartão
         this.modalCartao = document.getElementById("modal-cartao");
@@ -47,9 +50,8 @@ class GerenciadorDeInterface {
         this.modalSecaoTarefas = document.querySelector(".secao-tarefas");
 
         // Elementos do banner discreto de atualização do PWA (Fase 5)
-        this.avisoAtualizacao = document.getElementById("aviso-atualizacao");
+        this.avisoAtualizacao = document.querySelector(".notificacao-nova-versao");
         this.botaoAtualizarApp = document.getElementById("botao-atualizar-app");
-        this.botaoDispensarAtualizacao = document.getElementById("botao-dispensar-atualizacao");
 
         // Elementos do botão flutuante (FAB) e avisos de instalação do PWA (Fase 5)
         this.containerInstalarPwa = document.getElementById("container-instalar-pwa");
@@ -111,6 +113,13 @@ class GerenciadorDeInterface {
         if (this.botaoAdicionarColuna) {
             this.botaoAdicionarColuna.addEventListener("click", () => {
                 this.solicitarNovaColuna();
+            });
+        }
+
+        // Botão de alternância de tema claro/escuro
+        if (this.botaoTema) {
+            this.botaoTema.addEventListener("click", () => {
+                this.alternarTema();
             });
         }
 
@@ -1888,11 +1897,69 @@ class GerenciadorDeInterface {
             if (this.elementoNomeProjeto) {
                 this.elementoNomeProjeto.textContent = titulo;
             }
+
+            const tema = (config && config.tema === "dark") ? "dark" : "light";
+            this.aplicarTemaNaInterface(tema);
         } catch (erro) {
             console.error("Erro ao carregar configurações iniciais na interface:", erro);
             if (this.elementoNomeProjeto) {
                 this.elementoNomeProjeto.textContent = "Meu Projeto";
             }
+            this.aplicarTemaNaInterface("light");
+        }
+    }
+
+    /**
+     * Aplica a classe de tema no html/body, atualiza as meta tags theme-color e color-scheme,
+     * sincroniza a acessibilidade do botão de tema e atualiza o cache rápido em localStorage.
+     *
+     * @param {"light" | "dark"} tema - Tema a ser aplicado na interface.
+     */
+    aplicarTemaNaInterface(tema) {
+        const ehEscuro = tema === "dark";
+        const temaNormalizado = ehEscuro ? "dark" : "light";
+
+        document.documentElement.classList.toggle("tema-escuro", ehEscuro);
+        document.body.classList.toggle("tema-escuro", ehEscuro);
+
+        if (this.metaThemeColor) {
+            this.metaThemeColor.setAttribute("content", ehEscuro ? "#121618" : "#f4f7f7");
+        }
+
+        if (this.metaColorScheme) {
+            this.metaColorScheme.setAttribute("content", temaNormalizado);
+        }
+
+        try {
+            localStorage.setItem("koff-tema", temaNormalizado);
+        } catch (erro) {
+            // Ignora indisponibilidade de localStorage
+        }
+
+        if (this.botaoTema) {
+            const rotulo = ehEscuro ? "Alternar para tema claro" : "Alternar para tema escuro";
+            this.botaoTema.setAttribute("aria-pressed", String(ehEscuro));
+            this.botaoTema.setAttribute("aria-label", rotulo);
+            this.botaoTema.setAttribute("title", rotulo);
+        }
+    }
+
+    /**
+     * Alterna entre o tema claro e o tema escuro e persiste a escolha no IndexedDB.
+     *
+     * @returns {Promise<void>}
+     */
+    async alternarTema() {
+        const ehEscuroAtualmente = document.documentElement.classList.contains("tema-escuro")
+            || document.body.classList.contains("tema-escuro");
+        const novoTema = ehEscuroAtualmente ? "light" : "dark";
+
+        this.aplicarTemaNaInterface(novoTema);
+
+        try {
+            await this.bancoDeDados.atualizarConfiguracoes({ tema: novoTema });
+        } catch (erro) {
+            console.error("Erro ao salvar preferência de tema:", erro);
         }
     }
 
@@ -1960,30 +2027,24 @@ class GerenciadorDeInterface {
      * Exibe o banner discreto informando que uma nova versão do PWA está pronta
      * e conecta os botões de confirmação e dispensa do aviso.
      *
-     * @param {Function} aoConfirmar - Callback executado quando o usuário clica em "Atualizar".
+     * @param {Function} aoConfirmar - Callback executado quando o usuário clicar em "Atualizar".
      */
     exibirAvisoAtualizacao(aoConfirmar) {
         if (!this.avisoAtualizacao || !this.botaoAtualizarApp) {
             return;
         }
 
-        // Restaura estado padrão do botão caso o banner seja reexibido
-        this.botaoAtualizarApp.disabled = false;
-        this.botaoAtualizarApp.textContent = "Atualizar";
+        // Restaura estado padrão do botão quando o banner for exibido
+        this.botaoAtualizarApp.classList.remove("oculto");
+        this.avisoAtualizacao.textContent = "Nova versão disponível, clique para atualizar.";
 
         this.botaoAtualizarApp.onclick = () => {
-            this.botaoAtualizarApp.disabled = true;
-            this.botaoAtualizarApp.textContent = "Atualizando...";
+            this.botaoAtualizarApp.classList.add("atualizando");
+            this.avisoAtualizacao.textContent = "Atualizando...";
             if (typeof aoConfirmar === "function") {
                 aoConfirmar();
             }
         };
-
-        if (this.botaoDispensarAtualizacao) {
-            this.botaoDispensarAtualizacao.onclick = () => {
-                this.avisoAtualizacao.classList.add("oculto");
-            };
-        }
 
         this.avisoAtualizacao.classList.remove("oculto");
     }

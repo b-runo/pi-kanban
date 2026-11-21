@@ -34,6 +34,15 @@ button {
     -o-user-select: none;
 }
 
+:root {
+    color-scheme: only light;
+}
+
+:root.tema-escuro,
+body.tema-escuro {
+    color-scheme: dark;
+}
+
 html,
 body {
     overflow-x: hidden;
@@ -79,7 +88,7 @@ main {
     flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
-    padding: .5rem;
+    padding: .5rem 0 .5rem .5rem;
 }
 
 .barra-acoes .nome-projeto {
@@ -132,18 +141,107 @@ main {
 }
 
 .barra-superior .menu {
+    display: flex;
+    gap: .5rem;
+}
+
+.barra-superior .menu button {
     width: 2.5rem;
     height: 2.5rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: .5rem;
+    border: none;
+    border-radius: 999px;
     cursor: pointer;
+    font-size: 1.2rem;
+    color: #2c3e50;
+    background-color: #eceff1;
     transition: background-color .2s ease-in-out;
 }
 
-.barra-superior .menu:hover {
+.barra-superior .menu button#botao-atualizar-app.atualizando i {
+    animation: spin 1s linear infinite;
+}
+
+
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.barra-superior .menu button:hover {
     background-color: #c0e4e2
+}
+
+.barra-superior .menu button.tema {
+    width: 5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.barra-superior .menu button.tema .icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    pointer-events: none;
+    transition: transform .4s cubic-bezier(.4, 0, .2, 1), opacity .4s ease, color .2s ease;
+}
+
+.barra-superior .menu button.tema .icon-moon-02 {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateX(0) rotate(0deg);
+}
+
+.barra-superior .menu button.tema .icon-sun {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateX(0) rotate(-180deg);
+}
+
+:root.tema-escuro .barra-superior .menu button.tema .icon-moon-02,
+body.tema-escuro .barra-superior .menu button.tema .icon-moon-02 {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateX(2.5rem) rotate(180deg);
+}
+
+:root.tema-escuro .barra-superior .menu button.tema .icon-sun,
+body.tema-escuro .barra-superior .menu button.tema .icon-sun {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateX(2.5rem) rotate(0deg);
+}
+
+#barra-notificacao {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+#barra-notificacao .notificacao-nova-versao {
+    padding: .5rem;
+    border-radius: .3rem;
+    background-color: #1a796b;
+    color: #fff;
+    text-align: right;
+    position: relative;
+}
+
+#barra-notificacao .notificacao-nova-versao::before {
+    content: "";
+    display: block;
+    width: 1rem;
+    aspect-ratio: 1 / 1;
+    background: inherit;
+    position: absolute;
+    top: -.25rem;
+    right: .75rem;
+    transform: rotate(45deg);
+    z-index: -1;
 }
 
 /* Contêiner principal do quadro Kanban (organização horizontal) */
@@ -222,7 +320,7 @@ main {
     width: .5rem;
     background-color: var(--cor-destaque-coluna);
     margin: 0 .5rem;
-    border-radius: 50%;
+    border-radius: 999px;
     box-shadow: 0 0 0px 5px color-mix(in srgb, var(--cor-destaque-coluna) 10%, transparent);
     transition: background-color .15s ease-in-out;
 }
@@ -329,7 +427,7 @@ main {
     display: inline-block;
     width: .75rem;
     height: .75rem;
-    border-radius: 50%;
+    border-radius: 999px;
     border: 1px solid rgba(0, 0, 0, 0.25);
     flex-shrink: 0;
     background-color: var(--cor-destaque-coluna);
@@ -1069,8 +1167,8 @@ main {
     background-color: #fdedec;
 }
 
-
 /* ==========================================================================
+
    Estilos de Arrastar e Soltar (Fase 4: SortableJS PC e Mobile)
    ========================================================================== */
 
@@ -1141,64 +1239,12 @@ body.arrastando-elemento {
     .barra-acoes .nome-projeto {
         flex: 1;
     }
-}
 
-/* ==========================================================================
-   Banner Discreto de Atualização do PWA (Fase 5)
-   ========================================================================== */
-
-.aviso-atualizacao {
-    position: fixed;
-    right: 1rem;
-    bottom: 1rem;
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    background-color: #1b1f23;
-    color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    font-size: 0.9rem;
-    max-width: calc(100vw - 2rem);
-}
-
-.aviso-atualizacao-acoes {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.botao-atualizar-app {
-    background-color: #1a796b;
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.85rem;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.botao-atualizar-app:hover {
-    background-color: #145f54;
-}
-
-.botao-dispensar-atualizacao {
-    background: transparent;
-    color: #cfd8dc;
-    border: none;
-    padding: 0.25rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.botao-dispensar-atualizacao:hover {
-    color: #ffffff;
+    .container-instalar-pwa {
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        max-width: min(20rem, calc(100vw - 2rem));
+    }
 }
 
 /* ==========================================================================
@@ -1207,14 +1253,13 @@ body.arrastando-elemento {
 
 .container-instalar-pwa {
     position: fixed;
-    left: 1rem;
+    right: 1rem;
     bottom: 1rem;
     z-index: 1900;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
     gap: 0.5rem;
-    max-width: min(20rem, calc(100vw - 2rem));
 }
 
 .aviso-instalar-pwa,
