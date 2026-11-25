@@ -686,21 +686,21 @@ body.tema-escuro .barra-superior .menu button.tema .icon-sun {
 }
 
 .cartao-prioridade-baixa {
-    background-color: #e3ebf3;
-    color: #1565c0;
-    border-color: #2970c2;
+    background-color: #1565c0;
+    color: #ffff;
+    border-color: #1565c0;
 }
 
 .cartao-prioridade-media {
-    background-color: #fefbf6;
-    color: #f9a825;
-    border-color: #FF9800;
+     background-color: #f9a825;
+    color: #ffff;
+    border-color: #f9a825;
 }
 
 .cartao-prioridade-alta {
-    background-color: #ffebee;
-    color: #c62828;
-    border-color: #ffcdd2;
+    background-color: #c62828;
+    color: #ffff;
+    border-color: #c62828;
 }
 
 /* Indicador visual de progresso de subtarefas no cartão */

@@ -2082,10 +2082,10 @@ class GerenciadorDeInterface {
     }
 
     /**
-     * Exibe o botão flutuante (FAB) de instalação do PWA junto com a mensagem
+     * Exibe o botão de instalação do PWA junto com a mensagem
      * de aviso sobre a proteção dos dados locais no IndexedDB.
      *
-     * @param {Function} aoClicar - Callback acionado quando o usuário clica no FAB.
+     * @param {Function} aoClicar - Callback acionado quando o usuário clica no botão.
      */
     exibirBotaoInstalacao(aoClicar) {
         if (!this.containerInstalarPwa || !this.botaoInstalarPwa) {
@@ -2216,8 +2216,12 @@ class GerenciadorDeInterface {
                 try {
                     const resultado = await this.gerenciadorDeBackup.importarDeArquivo(arquivo);
                     if (resultado && resultado.restaurado && resultado.resumo) {
+                        const textoColunas = resultado.resumo.colunas === 1 ? "coluna" : "colunas";
+                        const textoCartoes = resultado.resumo.cartoes === 1 ? "cartão" : "cartões";
+                        const textoTarefas = resultado.resumo.itens === 1 ? "tarefa" : "tarefas";
+
                         this.exibirStatusBackup(
-                            `Quadro restaurado: ${resultado.resumo.colunas} coluna(s), ${resultado.resumo.cartoes} cartão(ões) e ${resultado.resumo.itens} tarefa(s).`
+                            `Quadro restaurado: ${resultado.resumo.colunas} ${textoColunas}, ${resultado.resumo.cartoes} ${textoCartoes} e ${resultado.resumo.itens} ${textoTarefas}.`
                         );
                     }
                 } catch (erro) {
