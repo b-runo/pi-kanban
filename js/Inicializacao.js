@@ -334,9 +334,13 @@ function configurarAberturaAutomaticaPkb(gerenciadorDeBackup) {
                 const resultado = await gerenciadorDeBackup.importarDeManipuladorDeArquivo(manipuladorArquivo);
 
                 if (resultado && resultado.restaurado && resultado.resumo) {
+                    const textoColunas = resultado.resumo.colunas === 1 ? "coluna" : "colunas";
+                    const textoCartoes = resultado.resumo.cartoes === 1 ? "cartão" : "cartões";
+                    const textoTarefas = resultado.resumo.itens === 1 ? "tarefa" : "tarefas";
+
                     alert(
                         `Backup restaurado com sucesso!\n` +
-                        `${resultado.resumo.colunas} coluna(s), ${resultado.resumo.cartoes} cartão(ões) e ${resultado.resumo.itens} tarefa(s).`
+                        `${resultado.resumo.colunas} ${textoColunas}, ${resultado.resumo.cartoes} ${textoCartoes} e ${resultado.resumo.itens} ${textoTarefas}.`
                     );
                 }
             } catch (erro) {
