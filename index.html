@@ -150,7 +150,7 @@
         aria-labelledby="modal-configuracoes-titulo">
         <div class="modal-conteudo modal-conteudo-configuracoes">
             <header class="modal-cabecalho">
-                <h2 id="modal-configuracoes-titulo" class="modal-titulo-configuracoes">Backup do Quadro (.pkb)</h2>
+                <h2 id="modal-configuracoes-titulo" class="modal-titulo-configuracoes">Backup e Transferência</h2>
                 <button type="button" id="modal-configuracoes-botao-fechar" class="botao-fechar-modal"
                     aria-label="Fechar configurações">
                     <i class="icon icon-x-close" aria-hidden="true"></i>
@@ -158,37 +158,56 @@
             </header>
 
             <div class="modal-corpo">
-                <p class="descricao-backup">
-                    Exporte todas as colunas, cartões, tarefas e configurações em um arquivo <strong>.pkb</strong> ou
-                    importe um backup existente para substituir o quadro atual.
-                </p>
-
-                <div class="grupo-acoes-backup">
-                    <button type="button" id="botao-exportar-backup" class="botao-backup-acao botao-backup-exportar">
-                        <i class="icon icon-share-07" aria-hidden="true"></i>
-                        <span>Exportar</span>
+                <!-- Navegação por abas entre Backup em Arquivo (.pkb) e Transferência via QR Code -->
+                <div class="abas-backup" role="tablist" aria-label="Opções de backup e transferência">
+                    <button type="button" id="aba-backup-arquivo" class="aba-backup ativa" role="tab"
+                        aria-selected="true" aria-controls="painel-aba-arquivo" data-aba="arquivo" tabindex="0">
+                        <i class="icon icon-file-02" aria-hidden="true"></i>
+                        <span>Arquivo (.pkb)</span>
                     </button>
-
-                    <button type="button" id="botao-importar-backup" class="botao-backup-acao botao-backup-importar">
-                        <i class="icon icon-file-download-02" aria-hidden="true"></i>
-                        <span>Importar</span>
+                    <button type="button" id="aba-backup-qr" class="aba-backup" role="tab" aria-selected="false"
+                        aria-controls="painel-aba-qr" data-aba="qr" tabindex="-1">
+                        <i class="icon icon-qr-code-02" aria-hidden="true"></i>
+                        <span>QR Code</span>
                     </button>
-
-                    <!-- Input de arquivo oculto sem atributo accept para evitar bloqueio por UTI no iOS Safari -->
-                    <input type="file" id="input-importar-backup" class="oculto">
                 </div>
 
-                <p id="status-backup" class="mensagem-status-backup oculto" role="status" aria-live="polite"></p>
+                <!-- Aba 1: Backup em Arquivo (.pkb) -->
+                <section id="painel-aba-arquivo" class="painel-aba-backup" role="tabpanel"
+                    aria-labelledby="aba-backup-arquivo">
+                    <p class="descricao-backup">
+                        Exporte todas as colunas, cartões, tarefas e configurações em um arquivo <strong>.pkb</strong>
+                        ou
+                        importe um backup existente para substituir o quadro atual.
+                    </p>
 
-                <!-- Seção de Transferência Offline via QR Code (Fase 7) -->
-                <section class="secao-transferencia-qr" aria-labelledby="titulo-transferencia-qr">
-                    <div class="cabecalho-secao-qr">
-                        <h3 id="titulo-transferencia-qr" class="subtitulo-configuracoes">Transferência via QR Code</h3>
-                        <p class="descricao-backup">
-                            Transfira o quadro diretamente entre dispositivos offline exibindo ou escaneando QR Codes em
-                            sequência.
-                        </p>
+                    <div class="grupo-acoes-backup">
+                        <button type="button" id="botao-exportar-backup"
+                            class="botao-backup-acao botao-backup-exportar">
+                            <i class="icon icon-share-07" aria-hidden="true"></i>
+                            <span>Exportar</span>
+                        </button>
+
+                        <button type="button" id="botao-importar-backup"
+                            class="botao-backup-acao botao-backup-importar">
+                            <i class="icon icon-file-download-02" aria-hidden="true"></i>
+                            <span>Importar</span>
+                        </button>
+
+                        <!-- Input de arquivo oculto sem atributo accept para evitar bloqueio por UTI no iOS Safari -->
+                        <input type="file" id="input-importar-backup" class="oculto">
                     </div>
+
+                    <p id="status-backup" class="mensagem-status-backup oculto" role="status" aria-live="polite"></p>
+                </section>
+
+                <!-- Aba 2: Transferência Offline via QR Code (Fase 7) -->
+                <section id="painel-aba-qr" class="painel-aba-backup secao-transferencia-qr oculto" role="tabpanel"
+                    aria-labelledby="aba-backup-qr">
+                    <p class="descricao-backup">
+                        Transfira o quadro diretamente entre dispositivos offline exibindo ou escaneando QR Codes em
+                        sequência.
+                    </p>
 
                     <div id="grupo-acoes-qr" class="grupo-acoes-backup">
                         <button type="button" id="botao-qr-enviar" class="botao-backup-acao botao-backup-exportar">
