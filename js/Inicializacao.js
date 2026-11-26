@@ -398,6 +398,21 @@ async function inicializarAplicacao() {
             console.warn("⚠️ Classe GerenciadorDeBackup não encontrada. As opções de backup estarão indisponíveis.");
         }
 
+        // 3.1.1. Configura o Gerenciador de Transferência via QR Code (Fase 7)
+        if (typeof GerenciadorDeTransferenciaQr !== "undefined") {
+            window.gerenciadorDeTransferenciaQr = new GerenciadorDeTransferenciaQr(
+                window.bancoDeDadosLocal,
+                window.gerenciadorDeBackup || null,
+                window.gerenciadorDeInterface
+            );
+            window.gerenciadorDeInterface.definirGerenciadorDeTransferenciaQr(
+                window.gerenciadorDeTransferenciaQr
+            );
+            console.log("📷 Gerenciador de Transferência via QR Code configurado com sucesso.");
+        } else {
+            console.warn("⚠️ Classe GerenciadorDeTransferenciaQr não encontrada. A transferência via QR estará indisponível.");
+        }
+
         await window.gerenciadorDeInterface.inicializar();
         console.log("🖥️ Gerenciador de Interface inicializado com sucesso.");
 

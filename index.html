@@ -179,6 +179,102 @@
                 </div>
 
                 <p id="status-backup" class="mensagem-status-backup oculto" role="status" aria-live="polite"></p>
+
+                <!-- Seção de Transferência Offline via QR Code (Fase 7) -->
+                <section class="secao-transferencia-qr" aria-labelledby="titulo-transferencia-qr">
+                    <div class="cabecalho-secao-qr">
+                        <h3 id="titulo-transferencia-qr" class="subtitulo-configuracoes">Transferência via QR Code</h3>
+                        <p class="descricao-backup">
+                            Transfira o quadro diretamente entre dispositivos offline exibindo ou escaneando QR Codes em
+                            sequência.
+                        </p>
+                    </div>
+
+                    <div id="grupo-acoes-qr" class="grupo-acoes-backup">
+                        <button type="button" id="botao-qr-enviar" class="botao-backup-acao botao-backup-exportar">
+                            <i class="icon icon-share-07" aria-hidden="true"></i>
+                            <span>Enviar QR</span>
+                        </button>
+
+                        <button type="button" id="botao-qr-receber" class="botao-backup-acao botao-backup-importar">
+                            <i class="icon icon-file-download-02" aria-hidden="true"></i>
+                            <span>Ler QR</span>
+                        </button>
+                    </div>
+
+                    <!-- Painel do Emissor: carrossel de QR Codes -->
+                    <div id="painel-qr-emissor" class="painel-qr oculto">
+                        <div class="barra-topo-painel-qr">
+                            <span class="rotulo-painel-qr">Transmitindo quadro</span>
+                            <button type="button" id="botao-qr-voltar-emissor" class="botao-qr-secundario">
+                                Encerrar
+                            </button>
+                        </div>
+
+                        <div class="moldura-qr-emissor">
+                            <div id="container-svg-qr" class="caixa-qr-svg" aria-label="QR Code de transferência"></div>
+                        </div>
+
+                        <div class="info-progresso-qr">
+                            <span id="indicador-parte-qr" class="texto-progresso-qr">Preparando QR Code...</span>
+                            <span id="indicador-sessao-qr" class="badge-sessao-qr oculto"></span>
+                        </div>
+
+                        <div class="barra-progresso-qr" aria-hidden="true">
+                            <div id="progresso-emissor-qr" class="preenchimento-progresso-qr"></div>
+                        </div>
+
+                        <div class="controles-emissor-qr">
+                            <button type="button" id="botao-qr-anterior" class="botao-qr-controle"
+                                aria-label="Parte anterior">
+                                Anterior
+                            </button>
+                            <button type="button" id="botao-qr-pausar" class="botao-qr-controle botao-qr-destaque">
+                                Pausar
+                            </button>
+                            <button type="button" id="botao-qr-proximo" class="botao-qr-controle"
+                                aria-label="Próxima parte">
+                                Próximo
+                            </button>
+                        </div>
+
+                        <div class="grupo-velocidade-qr">
+                            <label for="select-velocidade-qr" class="rotulo-velocidade-qr">Velocidade:</label>
+                            <select id="select-velocidade-qr" class="campo-input select-velocidade-qr">
+                                <option value="1200">Lenta (1,2s)</option>
+                                <option value="750" selected>Normal (0,75s)</option>
+                                <option value="450">Rápida (0,45s)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Painel do Receptor: leitura contínua pela câmera -->
+                    <div id="painel-qr-receptor" class="painel-qr oculto">
+                        <div class="barra-topo-painel-qr">
+                            <span class="rotulo-painel-qr">Capturando QR Codes</span>
+                            <button type="button" id="botao-qr-voltar-receptor" class="botao-qr-secundario">
+                                Parar câmera
+                            </button>
+                        </div>
+
+                        <div id="leitor-qr-camera" class="leitor-qr-camera"></div>
+
+                        <div class="info-progresso-qr">
+                            <span id="indicador-progresso-receptor" class="texto-progresso-qr">
+                                Aponte a câmera para o QR Code do outro dispositivo.
+                            </span>
+                        </div>
+
+                        <div class="barra-progresso-qr" aria-hidden="true">
+                            <div id="progresso-receptor-qr" class="preenchimento-progresso-qr"></div>
+                        </div>
+
+                        <div id="grade-partes-receptor" class="grade-partes-qr oculto" aria-label="Partes capturadas">
+                        </div>
+                    </div>
+
+                    <p id="status-qr" class="mensagem-status-backup oculto" role="status" aria-live="polite"></p>
+                </section>
             </div>
         </div>
     </div>
@@ -211,6 +307,8 @@
     <!-- Inclusão de bibliotecas locais -->
     <script src="js/bibliotecas/dexie.js"></script>
     <script src="js/bibliotecas/sortable.min.js"></script>
+    <script src="js/bibliotecas/qrcode.min.js"></script>
+    <script src="js/bibliotecas/html5-qrcode.min.js"></script>
 
     <!-- Inclusão dos módulos JavaScript -->
     <script src="js/Modelo.js"></script>
@@ -218,6 +316,7 @@
     <script src="js/Interface.js"></script>
     <script src="js/ArrastarESoltar.js"></script>
     <script src="js/Backup.js"></script>
+    <script src="js/TransferenciaQr.js"></script>
     <script src="js/Inicializacao.js"></script>
     <script type="text/JavaScript">
 
