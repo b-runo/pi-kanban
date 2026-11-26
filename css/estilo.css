@@ -1386,27 +1386,27 @@ body.arrastando-elemento {
     border-color: #f5b7b1;
 }
 
-<<<<<<< HEAD
 /* Prioridade BAIXA com todas as tarefas concluídas */
 .linha-informacoes-cartao:has(.tarefas-concluidas) .cartao-prioridade.cartao-prioridade-baixa {
-  background-color: #64b5f6 !important;
-  border-color: #64b5f6 !important;
-  color: #ffffff !important;
+    background-color: #64b5f6 !important;
+    border-color: #64b5f6 !important;
+    color: #ffffff !important;
 }
 
 /* Prioridade MÉDIA com todas as tarefas concluídas */
 .linha-informacoes-cartao:has(.tarefas-concluidas) .cartao-prioridade.cartao-prioridade-media {
-  background-color: #ffcc80 !important;
-  border-color: #ffcc80 !important;
-  color: #ffffff !important;
+    background-color: #ffcc80 !important;
+    border-color: #ffcc80 !important;
+    color: #ffffff !important;
 }
 
 /* Prioridade ALTA com todas as tarefas concluídas */
 .linha-informacoes-cartao:has(.tarefas-concluidas) .cartao-prioridade.cartao-prioridade-alta {
-  background-color: #ef9a9a !important;
-  border-color: #ef9a9a !important;
-  color: #ffffff !important;
-=======
+    background-color: #ef9a9a !important;
+    border-color: #ef9a9a !important;
+    color: #ffffff !important;
+}
+
 /* ==========================================================================
    Transferência Offline via QR Code (Fase 7 - Emissor e Receptor)
    ========================================================================== */
@@ -1774,5 +1774,4 @@ body.tema-escuro .caixa-qr-svg {
     .select-velocidade-qr {
         max-width: none;
     }
->>>>>>> a9164f7 (feat: implement offline data transfer via QR code with emitter and receiver modes)
 }
