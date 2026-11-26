@@ -692,7 +692,7 @@ body.tema-escuro .barra-superior .menu button.tema .icon-sun {
 }
 
 .cartao-prioridade-media {
-     background-color: #f9a825;
+    background-color: #f9a825;
     color: #ffff;
     border-color: #f9a825;
 }
@@ -1312,7 +1312,7 @@ body.arrastando-elemento {
    ========================================================================== */
 
 .modal-conteudo-configuracoes {
-    max-width: 420px;
+    max-width: 460px;
 }
 
 .modal-titulo-configuracoes {
@@ -1386,6 +1386,7 @@ body.arrastando-elemento {
     border-color: #f5b7b1;
 }
 
+<<<<<<< HEAD
 /* Prioridade BAIXA com todas as tarefas concluídas */
 .linha-informacoes-cartao:has(.tarefas-concluidas) .cartao-prioridade.cartao-prioridade-baixa {
   background-color: #64b5f6 !important;
@@ -1405,4 +1406,373 @@ body.arrastando-elemento {
   background-color: #ef9a9a !important;
   border-color: #ef9a9a !important;
   color: #ffffff !important;
+=======
+/* ==========================================================================
+   Transferência Offline via QR Code (Fase 7 - Emissor e Receptor)
+   ========================================================================== */
+
+.secao-transferencia-qr {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-top: 1px solid #e9ecef;
+    padding-top: 1rem;
+}
+
+.cabecalho-secao-qr {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.subtitulo-configuracoes {
+    font-size: 0.96rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.painel-qr {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+}
+
+.barra-topo-painel-qr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rotulo-painel-qr {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.botao-qr-secundario,
+.botao-qr-controle {
+    padding: 0.42rem 0.75rem;
+    border-radius: 0.4rem;
+    border: 1px solid #ced4da;
+    background-color: #ffffff;
+    color: #2c3e50;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.botao-qr-secundario:hover,
+.botao-qr-controle:hover:not(:disabled) {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.botao-qr-controle:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.botao-qr-destaque {
+    background-color: #1a796b;
+    border-color: #1a796b;
+    color: #ffffff;
+}
+
+.botao-qr-destaque:hover:not(:disabled) {
+    background-color: #145f54;
+    border-color: #145f54;
+}
+
+/* Área do QR Code gerado (sempre branca com alto contraste para leitura em câmera) */
+.moldura-qr-emissor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.caixa-qr-svg {
+    width: min(260px, 100%);
+    aspect-ratio: 1 / 1;
+    padding: 10px;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #d5e0df;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.caixa-qr-svg svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    shape-rendering: crispEdges;
+}
+
+.info-progresso-qr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.texto-progresso-qr {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.badge-sessao-qr {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.barra-progresso-qr {
+    width: 100%;
+    height: 0.45rem;
+    background-color: #dee2e6;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.preenchimento-progresso-qr {
+    width: 0%;
+    height: 100%;
+    background-color: #1a796b;
+    border-radius: 999px;
+    transition: width 0.2s ease;
+}
+
+.controles-emissor-qr {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.grupo-velocidade-qr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+}
+
+.rotulo-velocidade-qr {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.select-velocidade-qr {
+    flex: 1;
+    max-width: 190px;
+    height: 2.15rem;
+    font-size: 0.84rem;
+    cursor: pointer;
+}
+
+/* Área do leitor de câmera (Receptor) */
+.leitor-qr-camera {
+    width: 100%;
+    min-height: 220px;
+    background-color: #121618;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.leitor-qr-camera video {
+    width: 100% !important;
+    max-height: 280px;
+    object-fit: cover;
+    display: block;
+    border-radius: 0.5rem;
+}
+
+.grade-partes-qr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.pilula-parte-qr {
+    min-width: 1.7rem;
+    padding: 0.18rem 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 0.3rem;
+    background-color: #e9ecef;
+    color: #6c757d;
+    border: 1px solid #ced4da;
+}
+
+.pilula-parte-qr.capturada {
+    background-color: #1a796b;
+    color: #ffffff;
+    border-color: #1a796b;
+}
+
+/* Contraste adequado no tema escuro para modal de configurações e Transferência QR */
+:root.tema-escuro .modal-conteudo-configuracoes,
+body.tema-escuro .modal-conteudo-configuracoes {
+    background-color: #1c2226;
+    color: #e9ecef;
+    border: 1px solid #2e373d;
+}
+
+:root.tema-escuro .modal-conteudo-configuracoes .modal-cabecalho,
+body.tema-escuro .modal-conteudo-configuracoes .modal-cabecalho {
+    border-bottom-color: #2e373d;
+}
+
+:root.tema-escuro .modal-titulo-configuracoes,
+body.tema-escuro .modal-titulo-configuracoes,
+:root.tema-escuro .subtitulo-configuracoes,
+body.tema-escuro .subtitulo-configuracoes,
+:root.tema-escuro .rotulo-painel-qr,
+body.tema-escuro .rotulo-painel-qr,
+:root.tema-escuro .texto-progresso-qr,
+body.tema-escuro .texto-progresso-qr {
+    color: #f1f3f5;
+}
+
+:root.tema-escuro .modal-conteudo-configuracoes .descricao-backup,
+body.tema-escuro .modal-conteudo-configuracoes .descricao-backup,
+:root.tema-escuro .rotulo-velocidade-qr,
+body.tema-escuro .rotulo-velocidade-qr {
+    color: #b8c2cc;
+}
+
+:root.tema-escuro .modal-conteudo-configuracoes .botao-fechar-modal,
+body.tema-escuro .modal-conteudo-configuracoes .botao-fechar-modal {
+    color: #b8c2cc;
+}
+
+:root.tema-escuro .modal-conteudo-configuracoes .botao-fechar-modal:hover,
+body.tema-escuro .modal-conteudo-configuracoes .botao-fechar-modal:hover {
+    background-color: #2a3238;
+    color: #ffffff;
+}
+
+:root.tema-escuro .secao-transferencia-qr,
+body.tema-escuro .secao-transferencia-qr {
+    border-top-color: #2e373d;
+}
+
+:root.tema-escuro .painel-qr,
+body.tema-escuro .painel-qr {
+    background-color: #14191c;
+    border-color: #2e373d;
+}
+
+:root.tema-escuro .botao-backup-importar,
+body.tema-escuro .botao-backup-importar,
+:root.tema-escuro .botao-qr-secundario,
+body.tema-escuro .botao-qr-secundario,
+:root.tema-escuro .botao-qr-controle:not(.botao-qr-destaque),
+body.tema-escuro .botao-qr-controle:not(.botao-qr-destaque) {
+    background-color: #252d33;
+    color: #f1f3f5;
+    border-color: #3a454d;
+}
+
+:root.tema-escuro .botao-backup-importar:hover,
+body.tema-escuro .botao-backup-importar:hover,
+:root.tema-escuro .botao-qr-secundario:hover,
+body.tema-escuro .botao-qr-secundario:hover,
+:root.tema-escuro .botao-qr-controle:not(.botao-qr-destaque):hover:not(:disabled),
+body.tema-escuro .botao-qr-controle:not(.botao-qr-destaque):hover:not(:disabled) {
+    background-color: #303a42;
+    border-color: #4c5a64;
+}
+
+:root.tema-escuro .select-velocidade-qr,
+body.tema-escuro .select-velocidade-qr {
+    background-color: #252d33;
+    color: #f1f3f5;
+    border-color: #3a454d;
+}
+
+:root.tema-escuro .badge-sessao-qr,
+body.tema-escuro .badge-sessao-qr {
+    background-color: #252d33;
+    color: #ced4da;
+}
+
+:root.tema-escuro .barra-progresso-qr,
+body.tema-escuro .barra-progresso-qr {
+    background-color: #2a3238;
+}
+
+:root.tema-escuro .pilula-parte-qr:not(.capturada),
+body.tema-escuro .pilula-parte-qr:not(.capturada) {
+    background-color: #252d33;
+    color: #adb5bd;
+    border-color: #3a454d;
+}
+
+:root.tema-escuro .mensagem-status-backup,
+body.tema-escuro .mensagem-status-backup {
+    background-color: #133530;
+    color: #b7ebe3;
+    border-color: #1e564d;
+}
+
+:root.tema-escuro .mensagem-status-backup.erro,
+body.tema-escuro .mensagem-status-backup.erro {
+    background-color: #3c1c1e;
+    color: #f8b4b4;
+    border-color: #6b2d30;
+}
+
+/* Preserva fundo branco sólido no QR Code mesmo sob tema escuro */
+:root.tema-escuro .caixa-qr-svg,
+body.tema-escuro .caixa-qr-svg {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #3a454d;
+}
+
+@media (max-width: 480px) {
+    .modal-conteudo-configuracoes {
+        padding: 0.9rem 1rem;
+    }
+
+    .grupo-acoes-backup {
+        flex-direction: column;
+    }
+
+    .controles-emissor-qr {
+        gap: 0.35rem;
+    }
+
+    .botao-qr-controle {
+        padding: 0.45rem 0.4rem;
+        font-size: 0.8rem;
+    }
+
+    .grupo-velocidade-qr {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .select-velocidade-qr {
+        max-width: none;
+    }
+>>>>>>> a9164f7 (feat: implement offline data transfer via QR code with emitter and receiver modes)
 }

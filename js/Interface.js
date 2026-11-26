@@ -62,6 +62,28 @@ class GerenciadorDeInterface {
         this.inputImportarBackup = document.getElementById("input-importar-backup");
         this.statusBackup = document.getElementById("status-backup");
 
+        // Elementos de Transferência Offline via QR Code (Fase 7)
+        this.grupoAcoesQr = document.getElementById("grupo-acoes-qr");
+        this.botaoQrEnviar = document.getElementById("botao-qr-enviar");
+        this.botaoQrReceber = document.getElementById("botao-qr-receber");
+        this.painelQrEmissor = document.getElementById("painel-qr-emissor");
+        this.botaoQrVoltarEmissor = document.getElementById("botao-qr-voltar-emissor");
+        this.containerSvgQr = document.getElementById("container-svg-qr");
+        this.indicadorParteQr = document.getElementById("indicador-parte-qr");
+        this.indicadorSessaoQr = document.getElementById("indicador-sessao-qr");
+        this.progressoEmissorQr = document.getElementById("progresso-emissor-qr");
+        this.botaoQrAnterior = document.getElementById("botao-qr-anterior");
+        this.botaoQrPausar = document.getElementById("botao-qr-pausar");
+        this.botaoQrProximo = document.getElementById("botao-qr-proximo");
+        this.selectVelocidadeQr = document.getElementById("select-velocidade-qr");
+        this.painelQrReceptor = document.getElementById("painel-qr-receptor");
+        this.botaoQrVoltarReceptor = document.getElementById("botao-qr-voltar-receptor");
+        this.leitorQrCamera = document.getElementById("leitor-qr-camera");
+        this.indicadorProgressoReceptor = document.getElementById("indicador-progresso-receptor");
+        this.progressoReceptorQr = document.getElementById("progresso-receptor-qr");
+        this.gradePartesReceptor = document.getElementById("grade-partes-receptor");
+        this.statusQr = document.getElementById("status-qr");
+
         // Elementos do botão flutuante (FAB) e avisos de instalação do PWA (Fase 5)
         this.containerInstalarPwa = document.getElementById("container-instalar-pwa");
         this.avisoInstalarPwa = document.getElementById("aviso-instalar-pwa");
@@ -82,6 +104,9 @@ class GerenciadorDeInterface {
 
         // Controlador opcional de backup/restauração (.pkb) injetado na inicialização
         this.gerenciadorDeBackup = null;
+
+        // Controlador opcional de transferência offline via QR Code (Fase 7)
+        this.gerenciadorDeTransferenciaQr = null;
     }
 
     /**
@@ -93,6 +118,17 @@ class GerenciadorDeInterface {
     definirGerenciadorDeBackup(gerenciadorDeBackup) {
         if (gerenciadorDeBackup) {
             this.gerenciadorDeBackup = gerenciadorDeBackup;
+        }
+    }
+
+    /**
+     * Registra a instância do gerenciador de transferência via QR Code (Emissor e Receptor).
+     *
+     * @param {GerenciadorDeTransferenciaQr} gerenciadorDeTransferenciaQr - Controlador de QR Code.
+     */
+    definirGerenciadorDeTransferenciaQr(gerenciadorDeTransferenciaQr) {
+        if (gerenciadorDeTransferenciaQr) {
+            this.gerenciadorDeTransferenciaQr = gerenciadorDeTransferenciaQr;
         }
     }
 
@@ -2233,6 +2269,340 @@ class GerenciadorDeInterface {
                 }
             });
         }
+
+        this.configurarOuvintesTransferenciaQr();
+    }
+
+    /**
+     * Configura os ouvintes de eventos da seção de Transferência Offline via QR Code.
+     */
+    configurarOuvintesTransferenciaQr() {
+        if (this.botaoQrEnviar) {
+            this.botaoQrEnviar.addEventListener("click", async () => {
+                if (!this.gerenciadorDeTransferenciaQr) {
+                    this.exibirStatusQr("Módulo de transferência via QR Code indisponível.", true);
+                    return;
+                }
+
+                this.ocultarStatusQr();
+                this.botaoQrEnviar.disabled = true;
+
+                try {
+                    await this.gerenciadorDeTransferenciaQr.encerrarLeitura();
+                    this.ocultarPaineisQr();
+
+                    if (this.grupoAcoesQr) {
+                        this.grupoAcoesQr.classList.add("oculto");
+                    }
+                    if (this.painelQrEmissor) {
+                        this.painelQrEmissor.classList.remove("oculto");
+                    }
+
+                    const intervaloMs = this.selectVelocidadeQr
+                        ? Number(this.selectVelocidadeQr.value) || 750
+                        : 750;
+
+                    await this.gerenciadorDeTransferenciaQr.iniciarEmissao({
+                        containerQr: this.containerSvgQr,
+                        intervaloMs,
+                        aoAtualizarEstado: (estado) => this.atualizarInterfaceEmissorQr(estado)
+                    });
+                } catch (erroEmissao) {
+                    console.error("Erro ao iniciar emissão de QR Code:", erroEmissao);
+                    await this.encerrarFluxosQrNaInterface();
+                    this.exibirStatusQr(
+                        erroEmissao.message || "Não foi possível gerar os QR Codes para transferência.",
+                        true
+                    );
+                } finally {
+                    this.botaoQrEnviar.disabled = false;
+                }
+            });
+        }
+
+        if (this.botaoQrVoltarEmissor) {
+            this.botaoQrVoltarEmissor.addEventListener("click", async () => {
+                await this.encerrarFluxosQrNaInterface();
+            });
+        }
+
+        if (this.botaoQrAnterior) {
+            this.botaoQrAnterior.addEventListener("click", () => {
+                if (this.gerenciadorDeTransferenciaQr) {
+                    this.gerenciadorDeTransferenciaQr.voltarFragmentoEmissao();
+                }
+            });
+        }
+
+        if (this.botaoQrPausar) {
+            this.botaoQrPausar.addEventListener("click", () => {
+                if (this.gerenciadorDeTransferenciaQr) {
+                    this.gerenciadorDeTransferenciaQr.alternarPausaEmissao();
+                }
+            });
+        }
+
+        if (this.botaoQrProximo) {
+            this.botaoQrProximo.addEventListener("click", () => {
+                if (this.gerenciadorDeTransferenciaQr) {
+                    this.gerenciadorDeTransferenciaQr.avancarFragmentoEmissao();
+                }
+            });
+        }
+
+        if (this.selectVelocidadeQr) {
+            this.selectVelocidadeQr.addEventListener("change", (evento) => {
+                if (this.gerenciadorDeTransferenciaQr) {
+                    const novoIntervalo = Number(evento.target.value) || 750;
+                    this.gerenciadorDeTransferenciaQr.alterarVelocidadeEmissao(novoIntervalo);
+                }
+            });
+        }
+
+        if (this.botaoQrReceber) {
+            this.botaoQrReceber.addEventListener("click", async () => {
+                if (!this.gerenciadorDeTransferenciaQr) {
+                    this.exibirStatusQr("Módulo de leitura de QR Code indisponível.", true);
+                    return;
+                }
+
+                this.ocultarStatusQr();
+                this.botaoQrReceber.disabled = true;
+
+                try {
+                    this.gerenciadorDeTransferenciaQr.encerrarEmissao();
+                    this.ocultarPaineisQr();
+
+                    if (this.grupoAcoesQr) {
+                        this.grupoAcoesQr.classList.add("oculto");
+                    }
+                    if (this.painelQrReceptor) {
+                        this.painelQrReceptor.classList.remove("oculto");
+                    }
+                    if (this.indicadorProgressoReceptor) {
+                        this.indicadorProgressoReceptor.textContent = "Iniciando câmera...";
+                    }
+                    if (this.progressoReceptorQr) {
+                        this.progressoReceptorQr.style.width = "0%";
+                    }
+                    if (this.gradePartesReceptor) {
+                        this.gradePartesReceptor.innerHTML = "";
+                        this.gradePartesReceptor.classList.add("oculto");
+                    }
+
+                    await this.gerenciadorDeTransferenciaQr.iniciarLeitura({
+                        idContainerLeitor: "leitor-qr-camera",
+                        aoAtualizarProgresso: (resumo) => this.atualizarInterfaceReceptorQr(resumo),
+                        aoMudarEstado: ({ ativo }) => {
+                            if (ativo && this.indicadorProgressoReceptor) {
+                                this.indicadorProgressoReceptor.textContent =
+                                    "Aponte a câmera para o QR Code do outro dispositivo.";
+                            }
+                        },
+                        aoConcluir: (resultado) => {
+                            this.ocultarPaineisQr();
+
+                            if (resultado && resultado.cancelado) {
+                                this.exibirStatusQr("Transferência via QR Code cancelada.");
+                                return;
+                            }
+
+                            if (resultado && resultado.restaurado && resultado.resumo) {
+                                const textoColunas = resultado.resumo.colunas === 1 ? "coluna" : "colunas";
+                                const textoCartoes = resultado.resumo.cartoes === 1 ? "cartão" : "cartões";
+                                const textoTarefas = resultado.resumo.itens === 1 ? "tarefa" : "tarefas";
+
+                                this.exibirStatusQr(
+                                    `Quadro recebido via QR Code: ${resultado.resumo.colunas} ${textoColunas}, ${resultado.resumo.cartoes} ${textoCartoes} e ${resultado.resumo.itens} ${textoTarefas}.`
+                                );
+                            } else {
+                                this.exibirStatusQr("Quadro recebido e restaurado via QR Code.");
+                            }
+                        },
+                        aoOcorrerErro: (erroLeitura) => {
+                            console.error("Erro ao concluir transferência via QR Code:", erroLeitura);
+                            this.ocultarPaineisQr();
+                            this.exibirStatusQr(
+                                (erroLeitura && erroLeitura.message)
+                                || "Não foi possível restaurar os dados lidos do QR Code.",
+                                true
+                            );
+                        }
+                    });
+                } catch (erroCamera) {
+                    console.error("Erro ao iniciar câmera para leitura de QR Code:", erroCamera);
+                    await this.encerrarFluxosQrNaInterface();
+                    this.exibirStatusQr(
+                        erroCamera.message || "Não foi possível acessar a câmera neste dispositivo.",
+                        true
+                    );
+                } finally {
+                    this.botaoQrReceber.disabled = false;
+                }
+            });
+        }
+
+        if (this.botaoQrVoltarReceptor) {
+            this.botaoQrVoltarReceptor.addEventListener("click", async () => {
+                await this.encerrarFluxosQrNaInterface();
+            });
+        }
+
+        // Garante liberação imediata da câmera e intervalos ao sair/ocultar a página no mobile
+        window.addEventListener("pagehide", () => {
+            if (this.gerenciadorDeTransferenciaQr) {
+                this.gerenciadorDeTransferenciaQr.encerrarTransferencia();
+            }
+        });
+    }
+
+    /**
+     * Atualiza indicadores visuais e controles do painel do Emissor de QR Code.
+     *
+     * @param {Object} estado - Estado atual do carrossel enviado pelo gerenciador.
+     */
+    atualizarInterfaceEmissorQr(estado) {
+        if (!estado || !estado.ativo) {
+            return;
+        }
+
+        const totalPartes = estado.totalPartes || 0;
+        const parteAtual = estado.numeroParteAtual || 0;
+        const percentual = totalPartes > 0 ? Math.round((parteAtual / totalPartes) * 100) : 0;
+
+        if (this.indicadorParteQr) {
+            if (totalPartes === 1) {
+                this.indicadorParteQr.textContent = "Parte 1 de 1 (QR único)";
+            } else {
+                const sufixoPausa = estado.pausado ? " (Pausado)" : "";
+                this.indicadorParteQr.textContent = `Parte ${parteAtual} de ${totalPartes}${sufixoPausa}`;
+            }
+        }
+
+        if (this.indicadorSessaoQr) {
+            if (estado.idSessao) {
+                this.indicadorSessaoQr.textContent = `Sessão ${estado.idSessao}`;
+                this.indicadorSessaoQr.classList.remove("oculto");
+            } else {
+                this.indicadorSessaoQr.textContent = "";
+                this.indicadorSessaoQr.classList.add("oculto");
+            }
+        }
+
+        if (this.progressoEmissorQr) {
+            this.progressoEmissorQr.style.width = `${percentual}%`;
+        }
+
+        const apenasUmaParte = totalPartes <= 1;
+        if (this.botaoQrAnterior) {
+            this.botaoQrAnterior.disabled = apenasUmaParte;
+        }
+        if (this.botaoQrProximo) {
+            this.botaoQrProximo.disabled = apenasUmaParte;
+        }
+        if (this.botaoQrPausar) {
+            this.botaoQrPausar.disabled = apenasUmaParte;
+            this.botaoQrPausar.textContent = estado.pausado ? "Retomar" : "Pausar";
+        }
+    }
+
+    /**
+     * Atualiza indicadores visuais e grade de partes do painel do Receptor de QR Code.
+     *
+     * @param {Object} resumo - Resumo de captura retornado pelo gerenciador.
+     */
+    atualizarInterfaceReceptorQr(resumo) {
+        if (!resumo) {
+            return;
+        }
+
+        if (resumo.tipo === "ignorado") {
+            if (resumo.total === 0 && this.indicadorProgressoReceptor) {
+                this.indicadorProgressoReceptor.textContent =
+                    "QR Code incompatível. Aponte para um QR gerado pelo K-Off.";
+            }
+            return;
+        }
+
+        if (this.indicadorProgressoReceptor) {
+            if (resumo.total === 1 && resumo.recebidas === 1) {
+                this.indicadorProgressoReceptor.textContent = "QR Code único capturado! Restaurando...";
+            } else {
+                this.indicadorProgressoReceptor.textContent =
+                    `Capturadas ${resumo.recebidas} de ${resumo.total} partes (${resumo.percentual}%)`;
+            }
+        }
+
+        if (this.progressoReceptorQr) {
+            this.progressoReceptorQr.style.width = `${resumo.percentual}%`;
+        }
+
+        if (this.gradePartesReceptor) {
+            if (resumo.total > 1) {
+                const conjuntoCapturadas = new Set(resumo.partesRecebidas || []);
+                const fragmento = document.createDocumentFragment();
+
+                for (let indice = 1; indice <= resumo.total; indice += 1) {
+                    const pilula = document.createElement("span");
+                    pilula.className = "pilula-parte-qr";
+                    if (conjuntoCapturadas.has(indice)) {
+                        pilula.classList.add("capturada");
+                    }
+                    pilula.textContent = String(indice);
+                    fragmento.appendChild(pilula);
+                }
+
+                this.gradePartesReceptor.innerHTML = "";
+                this.gradePartesReceptor.appendChild(fragmento);
+                this.gradePartesReceptor.classList.remove("oculto");
+            } else {
+                this.gradePartesReceptor.innerHTML = "";
+                this.gradePartesReceptor.classList.add("oculto");
+            }
+        }
+    }
+
+    /**
+     * Oculta os painéis de Emissor e Receptor e reexibe os botões iniciais de QR Code.
+     */
+    ocultarPaineisQr() {
+        if (this.painelQrEmissor) {
+            this.painelQrEmissor.classList.add("oculto");
+        }
+        if (this.painelQrReceptor) {
+            this.painelQrReceptor.classList.add("oculto");
+        }
+        if (this.grupoAcoesQr) {
+            this.grupoAcoesQr.classList.remove("oculto");
+        }
+        if (this.containerSvgQr) {
+            this.containerSvgQr.innerHTML = "";
+        }
+        if (this.progressoEmissorQr) {
+            this.progressoEmissorQr.style.width = "0%";
+        }
+        if (this.progressoReceptorQr) {
+            this.progressoReceptorQr.style.width = "0%";
+        }
+        if (this.gradePartesReceptor) {
+            this.gradePartesReceptor.innerHTML = "";
+            this.gradePartesReceptor.classList.add("oculto");
+        }
+        if (this.indicadorSessaoQr) {
+            this.indicadorSessaoQr.textContent = "";
+            this.indicadorSessaoQr.classList.add("oculto");
+        }
+    }
+
+    /**
+     * Interrompe com segurança o carrossel do Emissor e a câmera do Receptor,
+     * restaurando o estado visual inicial da seção QR Code.
+     */
+    async encerrarFluxosQrNaInterface() {
+        if (this.gerenciadorDeTransferenciaQr) {
+            await this.gerenciadorDeTransferenciaQr.encerrarTransferencia();
+        }
+        this.ocultarPaineisQr();
     }
 
     /**
@@ -2241,15 +2611,18 @@ class GerenciadorDeInterface {
     abrirModalConfiguracoes() {
         if (!this.modalConfiguracoes) return;
         this.ocultarStatusBackup();
+        this.ocultarStatusQr();
+        this.ocultarPaineisQr();
         this.modalConfiguracoes.classList.remove("oculto");
         document.body.classList.add("modal-aberto");
     }
 
     /**
-     * Fecha o modal de Configurações e Backup (.pkb).
+     * Fecha o modal de Configurações e Backup (.pkb), encerrando câmera e carrossel QR ativos.
      */
     fecharModalConfiguracoes() {
         if (!this.modalConfiguracoes) return;
+        this.encerrarFluxosQrNaInterface();
         this.modalConfiguracoes.classList.add("oculto");
         if (!this.modalCartao || this.modalCartao.classList.contains("oculto")) {
             document.body.classList.remove("modal-aberto");
@@ -2277,6 +2650,29 @@ class GerenciadorDeInterface {
         this.statusBackup.textContent = "";
         this.statusBackup.classList.remove("erro");
         this.statusBackup.classList.add("oculto");
+    }
+
+    /**
+     * Exibe mensagem de feedback da Transferência via QR Code no modal de configurações.
+     *
+     * @param {string} mensagem - Texto informativo para o usuário.
+     * @param {boolean} [ehErro=false] - Indica se a mensagem representa um erro.
+     */
+    exibirStatusQr(mensagem, ehErro = false) {
+        if (!this.statusQr) return;
+        this.statusQr.textContent = mensagem;
+        this.statusQr.classList.toggle("erro", Boolean(ehErro));
+        this.statusQr.classList.remove("oculto");
+    }
+
+    /**
+     * Oculta a mensagem de feedback da Transferência via QR Code.
+     */
+    ocultarStatusQr() {
+        if (!this.statusQr) return;
+        this.statusQr.textContent = "";
+        this.statusQr.classList.remove("erro");
+        this.statusQr.classList.add("oculto");
     }
 }
 

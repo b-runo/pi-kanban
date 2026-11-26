@@ -13,7 +13,7 @@
  * ==============================================================================
  */
 
-const VERSAO_CACHE = "k-off-v1.2.5";
+const VERSAO_CACHE = "k-off-v1.2.8";
 
 /**
  * Lista completa dos recursos estáticos essenciais para o K-Off rodar offline.
@@ -33,11 +33,14 @@ const ARQUIVOS_ESTATICOS = [
     "./img/icone-maskable-512.png",
     "./js/bibliotecas/dexie.js",
     "./js/bibliotecas/sortable.min.js",
+    "./js/bibliotecas/qrcode.min.js",
+    "./js/bibliotecas/html5-qrcode.min.js",
     "./js/Modelo.js",
     "./js/Armazenamento.js",
     "./js/Interface.js",
     "./js/ArrastarESoltar.js",
     "./js/Backup.js",
+    "./js/TransferenciaQr.js",
     "./js/Inicializacao.js"
 ];
 
