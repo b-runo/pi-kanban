@@ -13,7 +13,7 @@
  * ==============================================================================
  */
 
-const VERSAO_CACHE = "k-off-v1.3.0";
+const VERSAO_CACHE = "k-off-v1.3.1";
 
 /**
  * Lista completa dos recursos estáticos essenciais para o K-Off rodar offline.
