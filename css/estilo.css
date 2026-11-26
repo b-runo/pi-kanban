@@ -1321,6 +1321,65 @@ body.arrastando-elemento {
     color: #2c3e50;
 }
 
+/* Abas de navegação do modal de backup (Arquivo .pkb vs QR Code) */
+.abas-backup {
+    display: flex;
+    align-items: stretch;
+    gap: 0.25rem;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 0.1rem;
+}
+
+.aba-backup {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.9rem;
+    margin-bottom: -1px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0.35rem 0.35rem 0 0;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6c757d;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+}
+
+.aba-backup .icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.aba-backup:hover {
+    color: #2c3e50;
+    background-color: #f8f9fa;
+}
+
+.aba-backup:focus-visible {
+    outline: 2px solid #1a796b;
+    outline-offset: -2px;
+}
+
+.aba-backup.ativa {
+    color: #1a796b;
+    border-bottom-color: #1a796b;
+}
+
+.aba-backup.ativa:hover {
+    color: #145f54;
+    background-color: transparent;
+}
+
+.painel-aba-backup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
 .descricao-backup {
     font-size: 0.88rem;
     line-height: 1.45;
@@ -1414,21 +1473,7 @@ body.arrastando-elemento {
 .secao-transferencia-qr {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    border-top: 1px solid #e9ecef;
-    padding-top: 1rem;
-}
-
-.cabecalho-secao-qr {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-}
-
-.subtitulo-configuracoes {
-    font-size: 0.96rem;
-    font-weight: 600;
-    color: #2c3e50;
+    gap: 0.85rem;
 }
 
 .painel-qr {
@@ -1642,13 +1687,39 @@ body.tema-escuro .modal-conteudo-configuracoes .modal-cabecalho {
 
 :root.tema-escuro .modal-titulo-configuracoes,
 body.tema-escuro .modal-titulo-configuracoes,
-:root.tema-escuro .subtitulo-configuracoes,
-body.tema-escuro .subtitulo-configuracoes,
 :root.tema-escuro .rotulo-painel-qr,
 body.tema-escuro .rotulo-painel-qr,
 :root.tema-escuro .texto-progresso-qr,
 body.tema-escuro .texto-progresso-qr {
     color: #f1f3f5;
+}
+
+:root.tema-escuro .abas-backup,
+body.tema-escuro .abas-backup {
+    border-bottom-color: #2e373d;
+}
+
+:root.tema-escuro .aba-backup,
+body.tema-escuro .aba-backup {
+    color: #9aa5b1;
+}
+
+:root.tema-escuro .aba-backup:hover,
+body.tema-escuro .aba-backup:hover {
+    color: #f1f3f5;
+    background-color: #252d33;
+}
+
+:root.tema-escuro .aba-backup.ativa,
+body.tema-escuro .aba-backup.ativa {
+    color: #3dd6bf;
+    border-bottom-color: #3dd6bf;
+}
+
+:root.tema-escuro .aba-backup.ativa:hover,
+body.tema-escuro .aba-backup.ativa:hover {
+    color: #5ee3cf;
+    background-color: transparent;
 }
 
 :root.tema-escuro .modal-conteudo-configuracoes .descricao-backup,
@@ -1667,11 +1738,6 @@ body.tema-escuro .modal-conteudo-configuracoes .botao-fechar-modal {
 body.tema-escuro .modal-conteudo-configuracoes .botao-fechar-modal:hover {
     background-color: #2a3238;
     color: #ffffff;
-}
-
-:root.tema-escuro .secao-transferencia-qr,
-body.tema-escuro .secao-transferencia-qr {
-    border-top-color: #2e373d;
 }
 
 :root.tema-escuro .painel-qr,
@@ -1751,6 +1817,12 @@ body.tema-escuro .caixa-qr-svg {
 @media (max-width: 480px) {
     .modal-conteudo-configuracoes {
         padding: 0.9rem 1rem;
+    }
+
+    .aba-backup {
+        flex: 1;
+        padding: 0.55rem 0.5rem;
+        font-size: 0.86rem;
     }
 
     .grupo-acoes-backup {

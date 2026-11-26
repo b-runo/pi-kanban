@@ -57,6 +57,11 @@ class GerenciadorDeInterface {
         // Elementos do Modal de Configurações e Backup (.pkb) (Fase 6)
         this.modalConfiguracoes = document.getElementById("modal-configuracoes");
         this.modalConfiguracoesBotaoFechar = document.getElementById("modal-configuracoes-botao-fechar");
+        this.abaBackupArquivo = document.getElementById("aba-backup-arquivo");
+        this.abaBackupQr = document.getElementById("aba-backup-qr");
+        this.painelAbaArquivo = document.getElementById("painel-aba-arquivo");
+        this.painelAbaQr = document.getElementById("painel-aba-qr");
+        this.abaBackupAtiva = "arquivo";
         this.botaoExportarBackup = document.getElementById("botao-exportar-backup");
         this.botaoImportarBackup = document.getElementById("botao-importar-backup");
         this.inputImportarBackup = document.getElementById("input-importar-backup");
@@ -2201,6 +2206,43 @@ class GerenciadorDeInterface {
             }
         });
 
+        const abasBackup = [this.abaBackupArquivo, this.abaBackupQr].filter(Boolean);
+        abasBackup.forEach((aba, indice) => {
+            aba.addEventListener("click", () => {
+                const destino = aba.dataset.aba || "arquivo";
+                this.alternarAbaBackup(destino);
+            });
+
+            aba.addEventListener("keydown", (evento) => {
+                if (
+                    evento.key !== "ArrowRight"
+                    && evento.key !== "ArrowLeft"
+                    && evento.key !== "Home"
+                    && evento.key !== "End"
+                ) {
+                    return;
+                }
+                evento.preventDefault();
+
+                let proximoIndice = indice;
+                if (evento.key === "ArrowRight") {
+                    proximoIndice = (indice + 1) % abasBackup.length;
+                } else if (evento.key === "ArrowLeft") {
+                    proximoIndice = (indice - 1 + abasBackup.length) % abasBackup.length;
+                } else if (evento.key === "Home") {
+                    proximoIndice = 0;
+                } else if (evento.key === "End") {
+                    proximoIndice = abasBackup.length - 1;
+                }
+
+                const proximaAba = abasBackup[proximoIndice];
+                if (proximaAba) {
+                    proximaAba.focus();
+                    this.alternarAbaBackup(proximaAba.dataset.aba || "arquivo");
+                }
+            });
+        });
+
         if (this.botaoExportarBackup) {
             this.botaoExportarBackup.addEventListener("click", async () => {
                 if (!this.gerenciadorDeBackup) {
@@ -2606,6 +2648,49 @@ class GerenciadorDeInterface {
     }
 
     /**
+     * Alterna entre as abas do modal de Backup e Transferência ("arquivo" ou "qr").
+     * Ao sair da aba de QR Code, encerra câmera/carrossel ativos para liberar o dispositivo.
+     *
+     * @param {string} [abaDestino="arquivo"] - Identificador da aba ("arquivo" ou "qr").
+     */
+    async alternarAbaBackup(abaDestino = "arquivo") {
+        const destinoNormalizado = abaDestino === "qr" ? "qr" : "arquivo";
+        const abaAnterior = this.abaBackupAtiva;
+        this.abaBackupAtiva = destinoNormalizado;
+
+        const ehArquivo = destinoNormalizado === "arquivo";
+
+        if (this.abaBackupArquivo) {
+            this.abaBackupArquivo.classList.toggle("ativa", ehArquivo);
+            this.abaBackupArquivo.setAttribute("aria-selected", ehArquivo ? "true" : "false");
+            this.abaBackupArquivo.setAttribute("tabindex", ehArquivo ? "0" : "-1");
+        }
+
+        if (this.abaBackupQr) {
+            this.abaBackupQr.classList.toggle("ativa", !ehArquivo);
+            this.abaBackupQr.setAttribute("aria-selected", !ehArquivo ? "true" : "false");
+            this.abaBackupQr.setAttribute("tabindex", !ehArquivo ? "0" : "-1");
+        }
+
+        if (this.painelAbaArquivo) {
+            this.painelAbaArquivo.classList.toggle("oculto", !ehArquivo);
+        }
+
+        if (this.painelAbaQr) {
+            this.painelAbaQr.classList.toggle("oculto", ehArquivo);
+        }
+
+        if (ehArquivo) {
+            if (abaAnterior === "qr") {
+                await this.encerrarFluxosQrNaInterface();
+            }
+            this.ocultarStatusQr();
+        } else {
+            this.ocultarStatusBackup();
+        }
+    }
+
+    /**
      * Abre o modal de Configurações e Backup (.pkb).
      */
     abrirModalConfiguracoes() {
@@ -2613,6 +2698,7 @@ class GerenciadorDeInterface {
         this.ocultarStatusBackup();
         this.ocultarStatusQr();
         this.ocultarPaineisQr();
+        this.alternarAbaBackup("arquivo");
         this.modalConfiguracoes.classList.remove("oculto");
         document.body.classList.add("modal-aberto");
     }
