@@ -1,0 +1,241 @@
+/* ==========================================================================
+   Estilos do Tema Escuro - Kanban K-Off
+   Finalidade: Sobrescrever as variáveis CSS definidas em css/estilo.css
+   quando a classe .tema-escuro estiver aplicada no :root ou no body,
+   seguindo a paleta oficial de plans/Identidade Visual K-off.png.
+
+   Paleta base extraída da identidade visual:
+   - Primárias e Destaque: #00796B | #004D40 | #E0F2F1 | #4DB6AC | #1565C0
+   - Semânticas:           #2E7D32 | #F9A825 | #C62828
+   - Superfícies e Textos: #121618 | #1C2226 | #ECEFF1 | #607D8B | #4A5560 | #FFFFFF
+   ========================================================================== */
+
+:root.tema-escuro,
+body.tema-escuro {
+    color-scheme: dark;
+
+    /* ======================================================================
+       Globais e Barra de Rolagem
+       ====================================================================== */
+    --cor-fundo-pagina: #121618;
+    --cor-texto-principal: #eceff1;
+    --cor-scrollbar: #4a5560;
+    --cor-texto-edicao: #4db6ac;
+
+    /* ======================================================================
+       Cabeçalho e Barra de Ações
+       ====================================================================== */
+    --cor-fundo-botao-acao: #00796b;
+    --cor-fundo-botao-acao-hover: #004d40;
+    --cor-texto-botao-acao: #ffffff;
+    --cor-texto-botao-menu: #eceff1;
+    --cor-fundo-botao-menu: #1c2226;
+    --cor-fundo-botao-menu-hover: #263036;
+    --cor-fundo-notificacao-versao: #00796b;
+    --cor-texto-notificacao-versao: #ffffff;
+
+    /* ======================================================================
+       Quadro e Estado Vazio
+       ====================================================================== */
+    --cor-fundo-estado-vazio: #1c2226;
+    --cor-borda-estado-vazio: #4a5560;
+    --cor-texto-estado-vazio: #b0bec5;
+
+    /* ======================================================================
+       Colunas
+       ====================================================================== */
+    --cor-fundo-coluna: #1c2226;
+    --cor-borda-coluna-placeholder: #344047;
+    --cor-borda-coluna-placeholder-foco: #4db6ac;
+    --cor-sombra-foco-titulo-coluna: rgba(77, 182, 172, 0.25);
+    --cor-texto-aviso-sem-cartoes: #90a4ae;
+    --cor-borda-botao-menu-coluna: #2e373d;
+    --cor-texto-botao-menu-coluna: #90a4ae;
+    --cor-texto-botao-menu-coluna-hover: #eceff1;
+    --cor-fundo-botao-menu-coluna-hover: rgba(236, 239, 241, 0.08);
+    --cor-fundo-dropdown: #232a2f;
+    --cor-borda-dropdown: #37424a;
+    --cor-sombra-dropdown: rgba(0, 0, 0, 0.45);
+    --cor-texto-opcao-menu: #eceff1;
+    --cor-texto-opcao-menu-hover: #ffffff;
+    --cor-fundo-opcao-menu-hover: #2c353b;
+    --cor-texto-opcao-perigo: #ef9a9a;
+    --cor-texto-opcao-perigo-hover: #ffcdd2;
+    --cor-fundo-opcao-perigo-hover: rgba(198, 40, 40, 0.22);
+    --cor-divisor-menu-coluna: #2e373d;
+    --cor-borda-indicador-cor: rgba(236, 239, 241, 0.3);
+    --cor-fundo-seletor-cor: #171c20;
+    --cor-borda-seletor-cor: #2e373d;
+    --cor-texto-seletor-cor: #cfd8dc;
+    --cor-borda-botao-cor-opcao: rgba(236, 239, 241, 0.22);
+    --cor-sombra-botao-cor-opcao: rgba(0, 0, 0, 0.45);
+    --cor-foco-botao-cor-opcao: #4db6ac;
+    --cor-borda-input-cor: #37424a;
+    --cor-fundo-input-cor: #121618;
+    --cor-borda-botao-adicionar: #4db6ac;
+    --cor-fundo-botao-adicionar: rgba(0, 77, 64, 0.35);
+    --cor-texto-botao-adicionar: #e0f2f1;
+
+    /* ======================================================================
+       Cartões
+       ====================================================================== */
+    --cor-fundo-cartao: #232a2f;
+    --cor-borda-cartao: #2e373d;
+    --cor-sombra-cartao-hover: rgba(0, 0, 0, 0.38);
+    --cor-texto-cartao-titulo: #eceff1;
+    --cor-texto-cartao-descricao: #b0bec5;
+    --cor-borda-cartao-concluido: #2e7d32;
+    --cor-gradiente-cartao-concluido: rgba(46, 125, 50, 0.35);
+    --cor-texto-tag-cartao: #eceff1;
+    --cor-fundo-tag-cartao: #1c2226;
+    --cor-borda-tag-cartao: #37424a;
+    --cor-fundo-tag-concluida: rgba(46, 125, 50, 0.2);
+    --cor-texto-tag-concluida: #a5d6a7;
+    --cor-borda-tag-concluida: #2e7d32;
+    --cor-prazo-proximo: #f9a825;
+    --cor-prazo-urgente: #ef5350;
+    --cor-prazo-vencido: #ef5350;
+    --cor-prioridade-baixa: #1565c0;
+    --cor-prioridade-media: #f9a825;
+    --cor-prioridade-alta: #c62828;
+    --cor-texto-prioridade: #ffffff;
+    --cor-prioridade-baixa-concluida: #1e4b7a;
+    --cor-prioridade-media-concluida: #7a5814;
+    --cor-prioridade-alta-concluida: #782323;
+    --cor-texto-prioridade-concluida: #eceff1;
+    --cor-fundo-botao-excluir-cartao: rgba(198, 40, 40, 0.18);
+    --cor-borda-botao-excluir-cartao: rgba(198, 40, 40, 0.55);
+    --cor-texto-botao-excluir-cartao: #ef9a9a;
+
+    /* ======================================================================
+       Modal e Tarefas
+       ====================================================================== */
+    --cor-overlay-modal: rgba(0, 0, 0, 0.65);
+    --cor-fundo-modal: #1c2226;
+    --cor-sombra-modal: rgba(0, 0, 0, 0.5);
+    --cor-borda-modal-divisoria: #2e373d;
+    --cor-texto-modal-secundario: #b0bec5;
+    --cor-texto-modal-titulo: #eceff1;
+    --cor-texto-select-coluna: #eceff1;
+    --cor-fundo-select-coluna: #232a2f;
+    --cor-borda-select-coluna: #37424a;
+    --cor-fundo-select-coluna-hover: #2c353b;
+    --cor-texto-select-coluna-hover: #ffffff;
+    --cor-borda-select-coluna-hover: #4a5560;
+    --cor-texto-botao-fechar-modal: #90a4ae;
+    --cor-texto-botao-fechar-modal-hover: #ffffff;
+    --cor-fundo-botao-fechar-modal-hover: #2c353b;
+    --cor-texto-rotulo-campo: #cfd8dc;
+    --cor-borda-input: #37424a;
+    --cor-fundo-input: #121618;
+    --cor-texto-input: #eceff1;
+    --cor-borda-input-foco: #4db6ac;
+    --cor-fundo-input-desabilitado: #171c20;
+    --cor-texto-input-desabilitado: #607d8b;
+    --cor-borda-input-desabilitado: #262e34;
+    --cor-fundo-botao-adicionar-tarefa: #2e7d32;
+    --cor-fundo-botao-adicionar-tarefa-hover: #256628;
+    --cor-texto-botao-adicionar-tarefa: #ffffff;
+    --cor-botao-excluir-modal: #ef5350;
+    --cor-texto-botao-excluir-modal-hover: #ffffff;
+    --cor-fundo-botao-concluir-modal: #00796b;
+    --cor-fundo-botao-concluir-modal-hover: #004d40;
+    --cor-texto-botao-concluir-modal: #ffffff;
+    --cor-fundo-linha-tarefa: #232a2f;
+    --cor-fundo-input-tarefa: #1c2226;
+    --cor-texto-input-tarefa: #eceff1;
+    --cor-texto-input-tarefa-concluida: #607d8b;
+    --cor-fundo-input-tarefa-concluida: #171c20;
+    --cor-texto-botao-remover-tarefa: #90a4ae;
+    --cor-texto-botao-remover-tarefa-hover: #ef9a9a;
+    --cor-fundo-botao-remover-tarefa-hover: rgba(198, 40, 40, 0.2);
+
+    /* ======================================================================
+       Arrastar e Soltar
+       ====================================================================== */
+    --cor-borda-fantasma: #4db6ac;
+    --cor-fundo-fantasma: rgba(0, 121, 107, 0.18);
+    --cor-sombra-arrastando: rgba(0, 0, 0, 0.45);
+    --cor-sombra-coluna-arrastando: rgba(0, 0, 0, 0.5);
+
+    /* ======================================================================
+       PWA e Instalação
+       ====================================================================== */
+    --cor-fundo-aviso-pwa: #1c2226;
+    --cor-texto-aviso-pwa: #eceff1;
+    --cor-borda-aviso-pwa: #2e373d;
+    --cor-sombra-aviso-pwa: rgba(0, 0, 0, 0.4);
+    --cor-texto-fechar-aviso-pwa: #90a4ae;
+    --cor-texto-fechar-aviso-pwa-hover: #eceff1;
+    --cor-fundo-fab-pwa: #00796b;
+    --cor-fundo-fab-pwa-hover: #004d40;
+    --cor-texto-fab-pwa: #ffffff;
+    --cor-sombra-fab-pwa: rgba(0, 0, 0, 0.45);
+
+    /* ======================================================================
+       Configurações, Backup e QR Code
+       ====================================================================== */
+    --cor-texto-titulo-configuracoes: #eceff1;
+    --cor-borda-abas-backup: #2e373d;
+    --cor-texto-aba-backup: #90a4ae;
+    --cor-texto-aba-backup-hover: #eceff1;
+    --cor-fundo-aba-backup-hover: #232a2f;
+    --cor-aba-backup-ativa: #4db6ac;
+    --cor-aba-backup-ativa-hover: #e0f2f1;
+    --cor-texto-descricao-backup: #b0bec5;
+    --cor-fundo-botao-exportar: #00796b;
+    --cor-fundo-botao-exportar-hover: #004d40;
+    --cor-texto-botao-exportar: #ffffff;
+    --cor-fundo-botao-secundario-backup: #232a2f;
+    --cor-texto-botao-secundario-backup: #eceff1;
+    --cor-borda-botao-secundario-backup: #37424a;
+    --cor-fundo-botao-secundario-backup-hover: #2c353b;
+    --cor-borda-botao-secundario-backup-hover: #4a5560;
+    --cor-fundo-status-backup: rgba(0, 77, 64, 0.35);
+    --cor-texto-status-backup: #e0f2f1;
+    --cor-borda-status-backup: #00796b;
+    --cor-fundo-status-backup-erro: rgba(198, 40, 40, 0.2);
+    --cor-texto-status-backup-erro: #ffcdd2;
+    --cor-borda-status-backup-erro: #c62828;
+    --cor-fundo-painel-qr: #14191c;
+    --cor-borda-painel-qr: #2e373d;
+    --cor-texto-painel-qr: #eceff1;
+    --cor-borda-botao-qr: #37424a;
+    --cor-fundo-botao-qr: #232a2f;
+    --cor-texto-botao-qr: #eceff1;
+    --cor-fundo-botao-qr-hover: #2c353b;
+    --cor-borda-botao-qr-hover: #4a5560;
+    --cor-fundo-botao-qr-destaque: #00796b;
+    --cor-fundo-botao-qr-destaque-hover: #004d40;
+    --cor-texto-botao-qr-destaque: #ffffff;
+    --cor-fundo-caixa-qr: #ffffff;
+    --cor-texto-caixa-qr: #000000;
+    --cor-borda-caixa-qr: #37424a;
+    --cor-sombra-caixa-qr: rgba(0, 0, 0, 0.35);
+    --cor-fundo-badge-sessao-qr: #232a2f;
+    --cor-texto-badge-sessao-qr: #cfd8dc;
+    --cor-fundo-barra-progresso-qr: #2a3339;
+    --cor-preenchimento-progresso-qr: #4db6ac;
+    --cor-texto-velocidade-qr: #b0bec5;
+    --cor-fundo-leitor-qr: #121618;
+    --cor-fundo-pilula-qr: #232a2f;
+    --cor-texto-pilula-qr: #b0bec5;
+    --cor-borda-pilula-qr: #37424a;
+    --cor-fundo-pilula-qr-capturada: #00796b;
+    --cor-texto-pilula-qr-capturada: #ffffff;
+}
+
+/* ==========================================================================
+   Ajustes pontuais de contraste e contorno no tema escuro
+   ========================================================================== */
+
+:root.tema-escuro .modal-conteudo,
+body.tema-escuro .modal-conteudo {
+    border: 1px solid #2e373d;
+}
+
+/* Garante contraste adequado do rótulo escuro sobre o amarelo #F9A825 */
+:root.tema-escuro .cartao-prioridade-media,
+body.tema-escuro .cartao-prioridade-media {
+    color: #121618;
+}
