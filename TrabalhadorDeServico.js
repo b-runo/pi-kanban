@@ -13,7 +13,7 @@
  * ==============================================================================
  */
 
-const VERSAO_CACHE = "k-off-v1.3.2";
+const VERSAO_CACHE = "k-off-v1.3.4";
 
 /**
  * Lista completa dos recursos estáticos essenciais para o K-Off rodar offline.
@@ -25,6 +25,7 @@ const ARQUIVOS_ESTATICOS = [
     "./index.html",
     "./manifest.json",
     "./css/estilo.css",
+    "./css/estilo-escuro.css",
     "./css/icones.css",
     "./img/k-off-logo.svg",
     "./img/apple-touch-icon.png",
